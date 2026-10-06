@@ -14,7 +14,7 @@ public:
 
     double scalar_product(const Vector3& other) const { return x_ * other.x_ + y_ * other.y_ + z_ * other.z_; }
     double squared_length() const { return scalar_product(*this); }
-    double length() const { return std::sqrt(squared_length()); }
+    double length() const { return std::hypot(x_, y_, z_); }
 
     Vector3 vector_product(const Vector3& other) const {
         return {
@@ -76,8 +76,11 @@ public:
         return *this;
     }
 
+    bool operator==(const Vector3& other) const { return x_ == other.x_ && y_ == other.y_ && z_ == other.z_; }
     Vector3 operator-() const { return {-x_, -y_, -z_}; }
     Vector3 operator+() const { return *this; }
+
+    bool is_finite() const { return std::isfinite(x_) && std::isfinite(y_) && std::isfinite(z_); }
 
 private:
     double x_ = 0.0;
