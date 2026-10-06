@@ -4,7 +4,7 @@ project(triangles LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 
 set(SRCS
-    source/main.cpp)
+    source/vector3.cpp)
 
 add_library(triangles_lib STATIC ${SRCS})
 target_include_directories(triangles_lib PUBLIC "headers")
