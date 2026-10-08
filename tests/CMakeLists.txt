@@ -26,3 +26,4 @@ endfunction()
 
 add_geometry_test(vector3_tests vector3_tests.cpp)
 add_geometry_test(triangle_tests triangle_tests.cpp)
+add_geometry_test(predicates_tests predicates_tests.cpp)
