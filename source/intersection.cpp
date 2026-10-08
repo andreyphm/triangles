@@ -102,13 +102,13 @@ Segment longest_side(const Triangle& triangle) {
         Segment{triangle.vertex(2), triangle.vertex(0)}};
 
     std::size_t longest_index = 0;
-    double longest_length = (candidates[0].second - candidates[0].first).length();
+    double longest_squared_length = (candidates[0].second - candidates[0].first).squared_length();
 
     for (std::size_t index = 1; index < candidates.size(); ++index) {
-        const double length = (candidates[index].second - candidates[index].first).length();
-        if (length > longest_length) {
+        const double squared_length = (candidates[index].second - candidates[index].first).squared_length();
+        if (squared_length > longest_squared_length) {
             longest_index = index;
-            longest_length = length;
+            longest_squared_length = squared_length;
         }
     }
 

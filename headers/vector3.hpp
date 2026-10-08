@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include <stdexcept>
 
 class Vector3 {
 public:
@@ -14,7 +13,6 @@ public:
 
     double scalar_product(const Vector3& other) const { return x_ * other.x_ + y_ * other.y_ + z_ * other.z_; }
     double squared_length() const { return scalar_product(*this); }
-    double length() const { return std::hypot(x_, y_, z_); }
 
     Vector3 vector_product(const Vector3& other) const {
         return {
@@ -22,26 +20,6 @@ public:
             z_ * other.x_ - x_ * other.z_,
             x_ * other.y_ - y_ * other.x_
         };
-    }
-
-    bool normalize() {
-        const double current_length = length();
-        if (current_length == 0.0) {
-            return false;
-        }
-
-        x_ /= current_length;
-        y_ /= current_length;
-        z_ /= current_length;
-        return true;
-    }
-
-    Vector3 normalized() const {
-        Vector3 result = *this;
-        if (!result.normalize()) {
-            throw std::domain_error("cannot normalize a zero vector");
-        }
-        return result;
     }
 
     Vector3& operator+=(const Vector3& other) {
@@ -65,20 +43,8 @@ public:
         return *this;
     }
 
-    Vector3& operator/=(double scalar) {
-        if (scalar == 0.0) {
-            throw std::domain_error("division by zero");
-        }
-
-        x_ /= scalar;
-        y_ /= scalar;
-        z_ /= scalar;
-        return *this;
-    }
-
     bool operator==(const Vector3& other) const { return x_ == other.x_ && y_ == other.y_ && z_ == other.z_; }
     Vector3 operator-() const { return {-x_, -y_, -z_}; }
-    Vector3 operator+() const { return *this; }
 
     bool is_finite() const { return std::isfinite(x_) && std::isfinite(y_) && std::isfinite(z_); }
 
@@ -92,4 +58,3 @@ Vector3 operator+(Vector3 left, const Vector3& right);
 Vector3 operator-(Vector3 left, const Vector3& right);
 Vector3 operator*(Vector3 vector, double scalar);
 Vector3 operator*(double scalar, Vector3 vector);
-Vector3 operator/(Vector3 vector, double scalar);
