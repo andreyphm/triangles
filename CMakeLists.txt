@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(SRCS
     source/bounding_box.cpp
+    source/intersection.cpp
     source/robust_predicates.cpp
     source/triangle.cpp
     source/vector3.cpp)
