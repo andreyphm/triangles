@@ -2,6 +2,7 @@ set(GEOMETRY_SOURCES
     source/bounding_box.cpp
     source/input_reader.cpp
     source/intersection.cpp
+    source/intersection_search.cpp
     source/robust_predicates.cpp
     source/triangle.cpp
     source/vector3.cpp)
