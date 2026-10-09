@@ -3,9 +3,8 @@ include(FetchContent)
 FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG v1.17.0
-)
-# [GoogleTest Quickstart: CMake] For Windows: Prevent overriding the parent project's compiler/linker settings
+    GIT_TAG v1.17.0)
+
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
@@ -13,15 +12,18 @@ include(GoogleTest)
 
 function(add_geometry_test target_name source_file)
     add_executable(${target_name} ${source_file})
-    target_link_libraries(${target_name} PRIVATE triangles_lib GTest::gtest_main)
+    target_link_libraries(${target_name}
+        PRIVATE triangles_geometry GTest::gtest_main)
 
     if(MSVC)
         target_compile_options(${target_name} PRIVATE /W4 /permissive-)
     else()
-        target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wpedantic -Wconversion)
+        target_compile_options(${target_name} PRIVATE
+            -Wall -Wextra -Wpedantic -Wconversion)
     endif()
 
-    gtest_discover_tests(${target_name} PROPERTIES TIMEOUT 10 LABELS "geometry")
+    gtest_discover_tests(${target_name}
+        PROPERTIES TIMEOUT 10 LABELS "geometry")
 endfunction()
 
 add_geometry_test(vector3_tests vector3_tests.cpp)
