@@ -6,6 +6,11 @@
 
 #include <vector>
 
+using geometry::IntersectionFlags;
+using geometry::Triangle;
+using geometry::Vector3;
+using geometry::find_intersecting_triangles;
+
 namespace {
 
 Triangle triangle_at(double offset_x) {

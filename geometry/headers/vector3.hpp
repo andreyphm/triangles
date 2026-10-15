@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+namespace geometry {
+
 class Vector3 {
 public:
     Vector3() = default;
@@ -58,3 +60,5 @@ Vector3 operator+(Vector3 left, const Vector3& right);
 Vector3 operator-(Vector3 left, const Vector3& right);
 Vector3 operator*(Vector3 vector, double scalar);
 Vector3 operator*(double scalar, Vector3 vector);
+
+} // namespace geometry

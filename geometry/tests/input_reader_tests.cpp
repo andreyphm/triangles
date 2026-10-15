@@ -8,6 +8,12 @@
 #include <string>
 #include <vector>
 
+using geometry::Triangle;
+using geometry::TriangleReadResult;
+using geometry::TriangleReadStatus;
+using geometry::Vector3;
+using geometry::read_triangles;
+
 namespace {
 
 Triangle sample_triangle() {

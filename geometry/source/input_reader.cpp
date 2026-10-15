@@ -6,6 +6,8 @@
 #include <istream>
 #include <vector>
 
+namespace geometry {
+
 constexpr std::int64_t triangle_count_limit = 1'000'000;
 
 TriangleReadResult read_triangles(std::istream& input, std::vector<Triangle>& triangles) {
@@ -48,3 +50,5 @@ TriangleReadResult read_triangles(std::istream& input, std::vector<Triangle>& tr
     triangles.swap(parsed_triangles);
     return TriangleReadResult::success();
 }
+
+} // namespace geometry

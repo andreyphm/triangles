@@ -4,6 +4,8 @@
 
 #include <limits>
 
+using geometry::Vector3;
+
 TEST(Vector3, default_constructor_creates_zero_vector) {
     const Vector3 vector;
 

@@ -5,6 +5,9 @@
 #include <limits>
 #include <stdexcept>
 
+using geometry::Triangle;
+using geometry::Vector3;
+
 TEST(Triangle, stores_vertices_in_constructor_order) {
     const Vector3 first{1.0, 2.0, 3.0};
     const Vector3 second{4.0, 5.0, 6.0};

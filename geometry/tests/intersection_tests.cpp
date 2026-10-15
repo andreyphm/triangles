@@ -6,6 +6,10 @@
 #include <array>
 #include <cmath>
 
+using geometry::Triangle;
+using geometry::Vector3;
+using geometry::intersects;
+
 namespace {
 
 void expect_symmetric_intersection(const Triangle& first, const Triangle& second, bool expected) {

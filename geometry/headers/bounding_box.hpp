@@ -2,6 +2,8 @@
 
 #include "vector3.hpp"
 
+namespace geometry {
+
 class Triangle;
 
 class BoundingBox {
@@ -14,3 +16,5 @@ private:
     Vector3 min_;
     Vector3 max_;
 };
+
+} // namespace geometry

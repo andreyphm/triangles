@@ -5,6 +5,8 @@
 #include <array>
 #include <cstddef>
 
+namespace geometry {
+
 class Triangle {
 public:
     Triangle(const Vector3& first, const Vector3& second, const Vector3& third);
@@ -17,3 +19,5 @@ private:
     static constexpr std::size_t vertex_count_ = 3;
     std::array<Vector3, vertex_count_> vertices_;
 };
+
+} // namespace geometry

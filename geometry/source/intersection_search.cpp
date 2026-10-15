@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <vector>
 
+namespace geometry {
+
 IntersectionFlags find_intersecting_triangles(const std::vector<Triangle>& triangles) {
     IntersectionFlags intersection_flags(triangles.size(), false);
     std::size_t marked_triangle_count = 0;
@@ -37,3 +39,5 @@ IntersectionFlags find_intersecting_triangles(const std::vector<Triangle>& trian
 
     return intersection_flags;
 }
+
+} // namespace geometry

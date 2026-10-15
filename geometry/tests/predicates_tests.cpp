@@ -9,6 +9,12 @@
 #include <random>
 #include <stdexcept>
 
+using geometry::PredicateSign;
+using geometry::Vector2;
+using geometry::Vector3;
+using geometry::orient2d;
+using geometry::orient3d;
+
 namespace {
 
 PredicateSign sign_of(std::int64_t value) {

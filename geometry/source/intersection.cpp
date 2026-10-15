@@ -10,6 +10,8 @@
 #include <cstddef>
 #include <stdexcept>
 
+namespace geometry {
+
 namespace {
 
 enum class TriangleKind {
@@ -392,3 +394,5 @@ bool intersects(const Triangle& first, const Triangle& second) {
 
     throw std::logic_error("invalid triangle kind");
 }
+
+} // namespace geometry

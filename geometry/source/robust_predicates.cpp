@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <vector>
 
+namespace geometry {
+
 namespace {
 
 struct TwoComponent {
@@ -226,3 +228,5 @@ PredicateSign orient3d(const Vector3& first, const Vector3& second, const Vector
 
     return exact_first_z.mul(first_minor).sub(exact_second_z.mul(second_minor)).add(exact_third_z.mul(third_minor)).sign();
 }
+
+} // namespace geometry

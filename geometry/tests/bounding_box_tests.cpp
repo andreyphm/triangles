@@ -3,6 +3,10 @@
 
 #include <gtest/gtest.h>
 
+using geometry::BoundingBox;
+using geometry::Triangle;
+using geometry::Vector3;
+
 TEST(BoundingBox, overlaps_when_all_coordinate_intervals_overlap) {
     const Triangle first{
         Vector3(0.0, 0.0, 0.0),

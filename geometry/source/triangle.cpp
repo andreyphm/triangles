@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+namespace geometry {
+
 Triangle::Triangle(const Vector3& first, const Vector3& second, const Vector3& third)
     : vertices_{first, second, third} {
     if (!first.is_finite() || !second.is_finite() || !third.is_finite()) {
@@ -27,3 +29,5 @@ Vector3 Triangle::normal() const {
     const Vector3 second_edge = vertices_[2] - vertices_[0];
     return first_edge.vector_product(second_edge);
 }
+
+} // namespace geometry

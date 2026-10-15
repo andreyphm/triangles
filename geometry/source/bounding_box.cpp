@@ -4,6 +4,8 @@
 
 #include <algorithm>
 
+namespace geometry {
+
 BoundingBox::BoundingBox(const Triangle& triangle)
     : min_(
           std::min({triangle.vertex(0).x(), triangle.vertex(1).x(), triangle.vertex(2).x()}),
@@ -19,3 +21,5 @@ bool BoundingBox::overlaps(const BoundingBox& other) const {
         && min_.y() <= other.max_.y() && other.min_.y() <= max_.y()
         && min_.z() <= other.max_.z() && other.min_.z() <= max_.z();
 }
+
+} // namespace geometry

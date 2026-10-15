@@ -5,6 +5,8 @@
 #include <optional>
 #include <vector>
 
+namespace geometry {
+
 class Triangle;
 
 enum class TriangleReadStatus {
@@ -42,3 +44,5 @@ private:
 };
 
 TriangleReadResult read_triangles(std::istream& input, std::vector<Triangle>& triangles);
+
+} // namespace geometry
