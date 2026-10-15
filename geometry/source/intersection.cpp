@@ -289,77 +289,23 @@ bool segment_intersects_triangle(const Segment& segment, const Triangle& triangl
     return point_in_triangle(segment.second, triangle);
 }
 
-bool separates_on_axis(const Triangle& first, const Triangle& second, const Vector3& axis) {
-    if (axis == Vector3()) {
-        return false;
-    }
-
-    double first_min = first.vertex(0).scalar_product(axis);
-    double first_max = first_min;
-    double second_min = second.vertex(0).scalar_product(axis);
-    double second_max = second_min;
-
-    for (std::size_t index = 1; index < 3; ++index) {
-        const double first_projection = first.vertex(index).scalar_product(axis);
-        const double second_projection = second.vertex(index).scalar_product(axis);
-        first_min  = std::min(first_min, first_projection);
-        first_max  = std::max(first_max, first_projection);
-        second_min = std::min(second_min, second_projection);
-        second_max = std::max(second_max, second_projection);
-    }
-
-    return first_max < second_min || second_max < first_min;
+Segment side(const Triangle& triangle, std::size_t index) {
+    return {triangle.vertex(index), triangle.vertex((index + 1) % 3)};
 }
 
-bool separates_on_axis_2d(const std::array<Vector2, 3>& first, const std::array<Vector2, 3>& second, const Vector2& edge) {
-    const double axis_x = -edge.y();
-    const double axis_y = edge.x();
-    if (axis_x == 0.0 && axis_y == 0.0) {
-        return false;
+template <typename SegmentTriangleIntersectionCheck>
+bool any_side_intersects(const Triangle& sides_owner, const Triangle& other, SegmentTriangleIntersectionCheck segment_intersects) {
+    for (std::size_t index = 0; index < 3; ++index) {
+        if (segment_intersects(side(sides_owner, index), other)) {
+            return true;
+        }
     }
-
-    const auto projection = [axis_x, axis_y](const Vector2& point) {
-        return point.x() * axis_x + point.y() * axis_y;
-    };
-
-    double first_min  = projection(first[0]);
-    double first_max  = first_min;
-    double second_min = projection(second[0]);
-    double second_max = second_min;
-
-    for (std::size_t index = 1; index < first.size(); ++index) {
-        const double first_projection = projection(first[index]);
-        const double second_projection = projection(second[index]);
-        first_min  = std::min(first_min, first_projection);
-        first_max  = std::max(first_max, first_projection);
-        second_min = std::min(second_min, second_projection);
-        second_max = std::max(second_max, second_projection);
-    }
-
-    return first_max < second_min || second_max < first_min;
+    return false;
 }
 
 bool coplanar_triangles_intersect(const Triangle& first, const Triangle& second) {
-    const ProjectionPlane projection_plane = select_projection_plane(first);
-    const std::array<Vector2, 3> first_projected  = projected_vertices(first, projection_plane);
-    const std::array<Vector2, 3> second_projected = projected_vertices(second, projection_plane);
-
-    for (std::size_t index = 0; index < 3; ++index) {
-        const std::size_t next_index = (index + 1) % 3;
-        const Vector2 first_edge{
-            first_projected[next_index].x() - first_projected[index].x(),
-            first_projected[next_index].y() - first_projected[index].y()};
-        const Vector2 second_edge{
-            second_projected[next_index].x() - second_projected[index].x(),
-            second_projected[next_index].y() - second_projected[index].y()};
-
-        if (separates_on_axis_2d(first_projected, second_projected, first_edge)
-            || separates_on_axis_2d(first_projected, second_projected, second_edge)) {
-            return false;
-        }
-    }
-
-    return true;
+    return any_side_intersects(first, second, segment_intersects_coplanar_triangle)
+        || any_side_intersects(second, first, segment_intersects_coplanar_triangle);
 }
 
 bool separated_by_plane(const Triangle& plane, const Triangle& other) {
@@ -392,16 +338,8 @@ bool area_triangles_intersect(const Triangle& first, const Triangle& second) {
         return coplanar_triangles_intersect(first, second);
     }
 
-    for (std::size_t first_edge = 0; first_edge < 3; ++first_edge) {
-        for (std::size_t second_edge = 0; second_edge < 3; ++second_edge) {
-            const Vector3 axis = first.edge(first_edge).vector_product(second.edge(second_edge));
-            if (separates_on_axis(first, second, axis)) {
-                return false;
-            }
-        }
-    }
-
-    return true;
+    return any_side_intersects(first, second, segment_intersects_triangle)
+        || any_side_intersects(second, first, segment_intersects_triangle);
 }
 
 } // namespace

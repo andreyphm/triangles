@@ -531,3 +531,29 @@ TEST(Intersection, handles_nearly_coplanar_intersection) {
 
     expect_symmetric_intersection(horizontal, crossing, true);
 }
+
+TEST(Intersection, detects_vertex_touching_edge_interior_with_large_coordinates) {
+    const Triangle first{
+        Vector3(860677.0, 217408.0, 997841.0),
+        Vector3(591416.0, -675864.0, 744645.0),
+        Vector3(457677.0, 101573.0, -11377.0)};
+    const Triangle second{
+        Vector3(1494178.0, 317806.0, 1969790.0),
+        Vector3(227176.0, 117010.0, 25892.0),
+        Vector3(-975498.0, -616194.0, -886556.0)};
+
+    expect_symmetric_intersection(first, second, true);
+}
+
+TEST(Intersection, detects_coplanar_vertex_touching_edge_interior_with_large_coordinates) {
+    const Triangle first{
+        Vector3(564818516.0, 741922479.0, 0.0),
+        Vector3(-705854821.0, 698529496.0, 0.0),
+        Vector3(-422877607.0, 916786193.0, 0.0)};
+    const Triangle second{
+        Vector3(-237419485.0, -178717452.0, 0.0),
+        Vector3(1367056517.0, 1662562410.0, 0.0),
+        Vector3(374571355.0, -151234860.0, 0.0)};
+
+    expect_symmetric_intersection(first, second, true);
+}
