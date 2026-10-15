@@ -261,9 +261,24 @@ bool segment_intersects_coplanar_triangle(const Segment& segment, const Triangle
     return false;
 }
 
-bool segment_intersects_triangle(const Segment& segment, const Triangle& triangle) {
-    const PredicateSign first_endpoint_side = orient3d(triangle.vertex(0), triangle.vertex(1), triangle.vertex(2), segment.first);
-    const PredicateSign second_endpoint_side = orient3d(triangle.vertex(0), triangle.vertex(1), triangle.vertex(2), segment.second);
+using VertexSides = std::array<PredicateSign, 3>;
+
+VertexSides vertex_sides(const Triangle& plane, const Triangle& other) {
+    return {
+        orient3d(plane.vertex(0), plane.vertex(1), plane.vertex(2), other.vertex(0)),
+        orient3d(plane.vertex(0), plane.vertex(1), plane.vertex(2), other.vertex(1)),
+        orient3d(plane.vertex(0), plane.vertex(1), plane.vertex(2), other.vertex(2))};
+}
+
+bool strictly_on_one_side(const VertexSides& sides) {
+    return !is_zero(sides[0]) && sides[0] == sides[1] && sides[1] == sides[2];
+}
+
+bool segment_intersects_triangle(
+    const Segment& segment,
+    PredicateSign first_endpoint_side,
+    PredicateSign second_endpoint_side,
+    const Triangle& triangle) {
     const bool first_endpoint_on_plane = is_zero(first_endpoint_side);
     const bool second_endpoint_on_plane = is_zero(second_endpoint_side);
 
@@ -289,57 +304,45 @@ bool segment_intersects_triangle(const Segment& segment, const Triangle& triangl
     return point_in_triangle(segment.second, triangle);
 }
 
+bool segment_intersects_triangle(const Segment& segment, const Triangle& triangle) {
+    return segment_intersects_triangle(
+        segment,
+        orient3d(triangle.vertex(0), triangle.vertex(1), triangle.vertex(2), segment.first),
+        orient3d(triangle.vertex(0), triangle.vertex(1), triangle.vertex(2), segment.second),
+        triangle);
+}
+
 Segment side(const Triangle& triangle, std::size_t index) {
     return {triangle.vertex(index), triangle.vertex((index + 1) % 3)};
 }
 
-template <typename SegmentTriangleIntersectionCheck>
-bool any_side_intersects(const Triangle& sides_owner, const Triangle& other, SegmentTriangleIntersectionCheck segment_intersects) {
+bool any_side_intersects(const Triangle& sides_owner, const VertexSides& owner_vertex_sides, const Triangle& other) {
     for (std::size_t index = 0; index < 3; ++index) {
-        if (segment_intersects(side(sides_owner, index), other)) {
+        const std::size_t next_index = (index + 1) % 3;
+        if (segment_intersects_triangle(
+                side(sides_owner, index),
+                owner_vertex_sides[index],
+                owner_vertex_sides[next_index],
+                other)) {
             return true;
         }
     }
     return false;
 }
 
-bool coplanar_triangles_intersect(const Triangle& first, const Triangle& second) {
-    return any_side_intersects(first, second, segment_intersects_coplanar_triangle)
-        || any_side_intersects(second, first, segment_intersects_coplanar_triangle);
-}
-
-bool separated_by_plane(const Triangle& plane, const Triangle& other) {
-    const std::array<PredicateSign, 3> signs{
-        orient3d(plane.vertex(0), plane.vertex(1), plane.vertex(2), other.vertex(0)),
-        orient3d(plane.vertex(0), plane.vertex(1), plane.vertex(2), other.vertex(1)),
-        orient3d(plane.vertex(0), plane.vertex(1), plane.vertex(2), other.vertex(2))};
-
-    const bool all_negative = std::all_of(signs.begin(), signs.end(), [](PredicateSign sign) { return sign == PredicateSign::negative; });
-    const bool all_positive = std::all_of(signs.begin(), signs.end(), [](PredicateSign sign) { return sign == PredicateSign::positive; });
-
-    return all_negative || all_positive;
-}
-
-bool triangles_are_coplanar(const Triangle& first, const Triangle& second) {
-    for (std::size_t index = 0; index < 3; ++index) {
-        if (!is_zero(orient3d(first.vertex(0), first.vertex(1), first.vertex(2), second.vertex(index)))) {
-            return false;
-        }
-    }
-    return true;
-}
-
 bool area_triangles_intersect(const Triangle& first, const Triangle& second) {
-    if (separated_by_plane(first, second) || separated_by_plane(second, first)) {
+    const VertexSides second_sides = vertex_sides(first, second);
+    if (strictly_on_one_side(second_sides)) {
         return false;
     }
 
-    if (triangles_are_coplanar(first, second)) {
-        return coplanar_triangles_intersect(first, second);
+    const VertexSides first_sides = vertex_sides(second, first);
+    if (strictly_on_one_side(first_sides)) {
+        return false;
     }
 
-    return any_side_intersects(first, second, segment_intersects_triangle)
-        || any_side_intersects(second, first, segment_intersects_triangle);
+    return any_side_intersects(first, first_sides, second)
+        || any_side_intersects(second, second_sides, first);
 }
 
 } // namespace
