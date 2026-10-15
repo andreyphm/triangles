@@ -1,6 +1,5 @@
 #include "intersection.hpp"
 
-#include "bounding_box.hpp"
 #include "robust_predicates.hpp"
 #include "triangle.hpp"
 
@@ -350,10 +349,6 @@ bool area_triangles_intersect(const Triangle& first, const Triangle& second) {
 } // namespace
 
 bool intersects(const Triangle& first, const Triangle& second) {
-    if (!BoundingBox(first).overlaps(BoundingBox(second))) {
-        return false;
-    }
-
     const TriangleKind first_kind = classify(first);
     const TriangleKind second_kind = classify(second);
 
