@@ -10,6 +10,7 @@ include(cmake/warnings.cmake)
 
 add_subdirectory(geometry)
 add_subdirectory(graphics)
+add_subdirectory(cli)
 
 add_executable(triangles.out main.cpp)
 target_link_libraries(triangles.out PRIVATE triangles_geometry)
