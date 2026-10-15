@@ -14,6 +14,7 @@ namespace {
 
 constexpr int opengl_major_version = 3;
 constexpr int opengl_minor_version = 3;
+constexpr int screen_refreshes_per_frame = 1;
 
 GLFWwindow* create_window(int width, int height, const char* title) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, opengl_major_version);
@@ -30,6 +31,8 @@ GLFWwindow* create_window(int width, int height, const char* title) {
         glfwDestroyWindow(handle);
         throw std::runtime_error("failed to load OpenGL functions");
     }
+
+    glfwSwapInterval(screen_refreshes_per_frame);
 
     return handle;
 }
