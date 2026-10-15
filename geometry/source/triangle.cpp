@@ -11,10 +11,6 @@ Triangle::Triangle(const Vector3& first, const Vector3& second, const Vector3& t
     }
 }
 
-const Vector3& Triangle::vertex(std::size_t index) const {
-    return vertices_.at(index);
-}
-
 Vector3 Triangle::edge(std::size_t index) const {
     if (index >= vertex_count_) {
         throw std::out_of_range("triangle edge index is out of range");

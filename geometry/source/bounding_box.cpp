@@ -16,10 +16,4 @@ BoundingBox::BoundingBox(const Triangle& triangle)
           std::max({triangle.vertex(0).y(), triangle.vertex(1).y(), triangle.vertex(2).y()}),
           std::max({triangle.vertex(0).z(), triangle.vertex(1).z(), triangle.vertex(2).z()})) {}
 
-bool BoundingBox::overlaps(const BoundingBox& other) const {
-    return min_.x() <= other.max_.x() && other.min_.x() <= max_.x()
-        && min_.y() <= other.max_.y() && other.min_.y() <= max_.y()
-        && min_.z() <= other.max_.z() && other.min_.z() <= max_.z();
-}
-
 } // namespace geometry

@@ -10,7 +10,11 @@ class BoundingBox {
 public:
     BoundingBox(const Triangle& triangle);
 
-    bool overlaps(const BoundingBox& other) const;
+    bool overlaps(const BoundingBox& other) const {
+        return min_.x() <= other.max_.x() && other.min_.x() <= max_.x()
+            && min_.y() <= other.max_.y() && other.min_.y() <= max_.y()
+            && min_.z() <= other.max_.z() && other.min_.z() <= max_.z();
+    }
 
 private:
     Vector3 min_;
