@@ -9,12 +9,11 @@ set(GEOMETRY_SOURCES
 
 add_library(triangles_geometry STATIC ${GEOMETRY_SOURCES})
 target_include_directories(triangles_geometry PUBLIC headers)
+triangles_enable_warnings(triangles_geometry)
 
 if(MSVC)
-    target_compile_options(triangles_geometry PRIVATE /W4 /permissive-)
     set_source_files_properties(source/robust_predicates.cpp PROPERTIES COMPILE_OPTIONS "/fp:strict")
 else()
-    target_compile_options(triangles_geometry PRIVATE -Wall -Wextra -Wpedantic -Wconversion)
     set_source_files_properties(source/robust_predicates.cpp PROPERTIES COMPILE_OPTIONS "-fno-fast-math;-ffp-contract=off")
 endif()
 

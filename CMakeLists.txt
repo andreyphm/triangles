@@ -6,15 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(CTest)
+include(cmake/warnings.cmake)
 
 add_subdirectory(geometry)
 add_subdirectory(graphics)
 
 add_executable(triangles.out main.cpp)
 target_link_libraries(triangles.out PRIVATE triangles_geometry)
-
-if(MSVC)
-    target_compile_options(triangles.out PRIVATE /W4 /permissive-)
-else()
-    target_compile_options(triangles.out PRIVATE -Wall -Wextra -Wpedantic -Wconversion)
-endif()
+triangles_enable_warnings(triangles.out)
