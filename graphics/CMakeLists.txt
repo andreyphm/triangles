@@ -22,7 +22,9 @@ FetchContent_MakeAvailable(glfw glad)
 add_subdirectory(${glad_SOURCE_DIR}/cmake glad_cmake)
 glad_add_library(glad STATIC REPRODUCIBLE API gl:core=3.3 EXTENSIONS NONE)
 
-add_library(triangles_graphics STATIC source/window.cpp)
+add_library(triangles_graphics STATIC
+    source/shader_program.cpp
+    source/window.cpp)
 target_include_directories(triangles_graphics PUBLIC headers)
 target_link_libraries(triangles_graphics PRIVATE glad glfw)
 triangles_enable_warnings(triangles_graphics)
