@@ -23,6 +23,7 @@ if(BUILD_TESTING)
 endif()
 
 add_subdirectory(geometry)
+add_subdirectory(scene)
 add_subdirectory(graphics)
 add_subdirectory(cli)
 
