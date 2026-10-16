@@ -38,6 +38,7 @@ GLFWwindow* create_window(int width, int height, const char* title) {
     }
 
     glfwSwapInterval(screen_refreshes_per_frame);
+    glEnable(GL_DEPTH_TEST);
 
     return handle;
 }
@@ -67,7 +68,7 @@ bool Window::should_close() const {
 
 void Window::clear() {
     glClearColor(background_red, background_green, background_blue, background_alpha);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Window::swap_buffers() {
