@@ -28,6 +28,7 @@ int main() {
         const graphics::GpuTriangles gpu_triangles{scene::make_vertices(triangles)};
 
         shader_program.use();
+        graphics::set_triangles_fill_color(shader_program, 1.0f, 1.0f, 1.0f);
 
         while (!window.should_close()) {
             window.clear();

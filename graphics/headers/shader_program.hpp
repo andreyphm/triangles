@@ -13,6 +13,7 @@ public:
     ShaderProgram& operator=(const ShaderProgram&) = delete;
 
     void use() const;
+    void set_uniform(const char* name, float first, float second, float third) const;
 
 private:
     unsigned int handle_;
