@@ -160,3 +160,20 @@ TEST(InputReader, leaves_output_unchanged_after_count_error) {
     ASSERT_EQ(triangles.size(), 1);
     EXPECT_EQ(triangles[0].vertex(0), Vector3(10.0, 10.0, 10.0));
 }
+
+TEST(InputReader, has_no_error_message_after_success) {
+    EXPECT_EQ(TriangleReadResult::success().error_message(), "");
+}
+
+TEST(InputReader, describes_count_read_error) {
+    EXPECT_EQ(TriangleReadResult::count_read_failed().error_message(), "failed to read triangle count");
+}
+
+TEST(InputReader, describes_count_out_of_range_error) {
+    EXPECT_EQ(TriangleReadResult::count_out_of_range().error_message(),
+              "triangle count must satisfy 0 < N < 1000000");
+}
+
+TEST(InputReader, describes_triangle_read_error_with_triangle_number) {
+    EXPECT_EQ(TriangleReadResult::triangle_read_failed(5).error_message(), "failed to read triangle 5");
+}

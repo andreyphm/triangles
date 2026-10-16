@@ -7,36 +7,13 @@
 #include <iostream>
 #include <vector>
 
-namespace {
-
-void report_read_error(const geometry::TriangleReadResult& result) {
-    switch (result.status()) {
-        case geometry::TriangleReadStatus::count_read_failed:
-            std::cerr << "error: failed to read triangle count\n";
-            return;
-
-        case geometry::TriangleReadStatus::count_out_of_range:
-            std::cerr << "error: triangle count must satisfy 0 < N < 1000000\n";
-            return;
-
-        case geometry::TriangleReadStatus::triangle_read_failed:
-            std::cerr << "error: failed to read triangle " << result.triangle_number().value() << '\n';
-            return;
-
-        case geometry::TriangleReadStatus::success:
-            return;
-    }
-}
-
-} // namespace
-
 int main() {
     std::ios::sync_with_stdio(false);
 
     std::vector<geometry::Triangle> triangles;
     const geometry::TriangleReadResult read_result = geometry::read_triangles(std::cin, triangles);
     if (!read_result.is_success()) {
-        report_read_error(read_result);
+        std::cerr << "error: " << read_result.error_message() << '\n';
         return EXIT_FAILURE;
     }
 

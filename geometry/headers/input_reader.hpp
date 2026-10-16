@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <iosfwd>
 #include <optional>
+#include <string>
 #include <vector>
 
 namespace geometry {
@@ -34,6 +35,7 @@ public:
     bool is_success() const { return status_ == TriangleReadStatus::success; }
     TriangleReadStatus status() const { return status_; }
     std::optional<std::size_t> triangle_number() const { return triangle_number_; }
+    std::string error_message() const;
 
 private:
     TriangleReadResult(TriangleReadStatus status, std::optional<std::size_t> triangle_number)

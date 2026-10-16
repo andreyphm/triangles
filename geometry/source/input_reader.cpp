@@ -4,6 +4,8 @@
 
 #include <cstdint>
 #include <istream>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace geometry {
@@ -49,6 +51,24 @@ TriangleReadResult read_triangles(std::istream& input, std::vector<Triangle>& tr
 
     triangles.swap(parsed_triangles);
     return TriangleReadResult::success();
+}
+
+std::string TriangleReadResult::error_message() const {
+    switch (status_) {
+        case TriangleReadStatus::success:
+            return {};
+
+        case TriangleReadStatus::count_read_failed:
+            return "failed to read triangle count";
+
+        case TriangleReadStatus::count_out_of_range:
+            return "triangle count must satisfy 0 < N < " + std::to_string(triangle_count_limit);
+
+        case TriangleReadStatus::triangle_read_failed:
+            return "failed to read triangle " + std::to_string(triangle_number_.value());
+    }
+
+    throw std::logic_error("invalid triangle read status");
 }
 
 } // namespace geometry
