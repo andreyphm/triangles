@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace scene {
@@ -13,6 +14,7 @@ namespace {
 
 constexpr std::size_t vertices_per_triangle = 3;
 constexpr std::size_t coordinates_per_vertex = 3;
+constexpr std::size_t components_per_color = 3;
 constexpr double scene_half_size = 0.5;
 
 struct SceneBounds {
@@ -70,6 +72,22 @@ std::vector<float> make_vertices(const std::vector<geometry::Triangle>& triangle
     }
 
     return vertices;
+}
+
+std::vector<std::uint8_t> make_vertex_colors(const geometry::IntersectionFlags& intersection_flags) {
+    std::vector<std::uint8_t> colors;
+    colors.reserve(intersection_flags.size() * vertices_per_triangle * components_per_color);
+
+    for (const bool intersecting : intersection_flags) {
+        const Color& color = intersecting ? intersecting_color : regular_color;
+        for (std::size_t index = 0; index < vertices_per_triangle; ++index) {
+            colors.push_back(color.red);
+            colors.push_back(color.green);
+            colors.push_back(color.blue);
+        }
+    }
+
+    return colors;
 }
 
 } // namespace scene

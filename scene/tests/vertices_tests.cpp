@@ -6,10 +6,14 @@
 
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
+using geometry::IntersectionFlags;
 using geometry::Triangle;
 using geometry::Vector3;
+using scene::Color;
+using scene::make_vertex_colors;
 using scene::make_vertices;
 
 namespace {
@@ -24,6 +28,12 @@ enum Axis : std::size_t {
 
 float coordinate(const std::vector<float>& vertices, std::size_t vertex, Axis axis) {
     return vertices.at(vertex * coordinates_per_vertex + axis);
+}
+
+bool vertex_has_color(const std::vector<std::uint8_t>& colors, std::size_t vertex, Color color) {
+    constexpr std::size_t components_per_color = 3;
+    const std::size_t first = vertex * components_per_color;
+    return colors.at(first) == color.red && colors.at(first + 1) == color.green && colors.at(first + 2) == color.blue;
 }
 
 } // namespace
@@ -102,4 +112,26 @@ TEST(SceneVertices, handles_coordinates_near_double_limit) {
     }
     EXPECT_FLOAT_EQ(coordinate(vertices, 0, x_axis), -0.5f);
     EXPECT_FLOAT_EQ(coordinate(vertices, 1, x_axis), 0.5f);
+}
+
+TEST(SceneVertexColors, returns_nothing_for_empty_scene) {
+    EXPECT_TRUE(make_vertex_colors({}).empty());
+}
+
+TEST(SceneVertexColors, writes_nine_components_per_triangle) {
+    EXPECT_EQ(make_vertex_colors(IntersectionFlags{true, false}).size(), 18u);
+}
+
+TEST(SceneVertexColors, colors_all_vertices_of_triangle_by_its_flag) {
+    const std::vector<std::uint8_t> colors = make_vertex_colors(IntersectionFlags{false, true, false});
+
+    for (std::size_t vertex = 0; vertex < 3; ++vertex) {
+        EXPECT_TRUE(vertex_has_color(colors, vertex, scene::regular_color));
+    }
+    for (std::size_t vertex = 3; vertex < 6; ++vertex) {
+        EXPECT_TRUE(vertex_has_color(colors, vertex, scene::intersecting_color));
+    }
+    for (std::size_t vertex = 6; vertex < 9; ++vertex) {
+        EXPECT_TRUE(vertex_has_color(colors, vertex, scene::regular_color));
+    }
 }
