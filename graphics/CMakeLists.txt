@@ -33,6 +33,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     ${TRIANGLES_FRAGMENT_SHADER})
 
 add_library(triangles_graphics STATIC
+    source/gpu_triangles.cpp
     source/shader_program.cpp
     source/shaders.cpp
     source/window.cpp)

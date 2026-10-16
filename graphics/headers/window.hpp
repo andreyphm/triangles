@@ -24,6 +24,7 @@ public:
     Window& operator=(const Window&) = delete;
 
     bool should_close() const;
+    void clear();
     void swap_buffers();
     void poll_events();
 

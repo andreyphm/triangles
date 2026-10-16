@@ -16,6 +16,11 @@ constexpr int opengl_major_version = 3;
 constexpr int opengl_minor_version = 3;
 constexpr int screen_refreshes_per_frame = 1;
 
+constexpr GLfloat background_red = 0.1f;
+constexpr GLfloat background_green = 0.1f;
+constexpr GLfloat background_blue = 0.12f;
+constexpr GLfloat background_alpha = 1.0f;
+
 GLFWwindow* create_window(int width, int height, const char* title) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, opengl_major_version);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, opengl_minor_version);
@@ -58,6 +63,11 @@ Window::~Window() {
 
 bool Window::should_close() const {
     return glfwWindowShouldClose(handle_) == GLFW_TRUE;
+}
+
+void Window::clear() {
+    glClearColor(background_red, background_green, background_blue, background_alpha);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void Window::swap_buffers() {
