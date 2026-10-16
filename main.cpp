@@ -1,5 +1,6 @@
 #include "gpu_triangles.hpp"
 #include "input_reader.hpp"
+#include "intersection_search.hpp"
 #include "shaders.hpp"
 #include "triangle.hpp"
 #include "vertices.hpp"
@@ -20,15 +21,17 @@ int main() {
         return EXIT_FAILURE;
     }
 
+    const geometry::IntersectionFlags intersection_flags = geometry::find_intersecting_triangles(triangles);
+
     try {
         graphics::Window window{1280, 720, "Triangles"};
         std::cout << "OpenGL " << window.opengl_version() << '\n';
 
         const graphics::ShaderProgram shader_program = graphics::create_triangles_shader_program();
-        const graphics::GpuTriangles gpu_triangles{scene::make_vertices(triangles)};
+        const graphics::GpuTriangles gpu_triangles{
+            scene::make_vertices(triangles), scene::make_vertex_colors(intersection_flags)};
 
         shader_program.use();
-        graphics::set_triangles_fill_color(shader_program, 1.0f, 1.0f, 1.0f);
 
         while (!window.should_close()) {
             window.clear();
