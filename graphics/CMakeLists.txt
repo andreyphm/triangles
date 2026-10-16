@@ -22,9 +22,22 @@ FetchContent_MakeAvailable(glfw glad)
 add_subdirectory(${glad_SOURCE_DIR}/cmake glad_cmake)
 glad_add_library(glad STATIC REPRODUCIBLE API gl:core=3.3 EXTENSIONS NONE)
 
+set(TRIANGLES_VERTEX_SHADER ${CMAKE_CURRENT_SOURCE_DIR}/shaders/triangles_vertex.glsl)
+set(TRIANGLES_FRAGMENT_SHADER ${CMAKE_CURRENT_SOURCE_DIR}/shaders/triangles_fragment.glsl)
+
+file(READ ${TRIANGLES_VERTEX_SHADER} TRIANGLES_VERTEX_SOURCE)
+file(READ ${TRIANGLES_FRAGMENT_SHADER} TRIANGLES_FRAGMENT_SOURCE)
+configure_file(shaders/shader_sources.hpp.in generated/shader_sources.hpp @ONLY)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    ${TRIANGLES_VERTEX_SHADER}
+    ${TRIANGLES_FRAGMENT_SHADER})
+
 add_library(triangles_graphics STATIC
     source/shader_program.cpp
+    source/shaders.cpp
     source/window.cpp)
-target_include_directories(triangles_graphics PUBLIC headers)
+target_include_directories(triangles_graphics
+    PUBLIC headers
+    PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
 target_link_libraries(triangles_graphics PRIVATE glad glfw)
 triangles_enable_warnings(triangles_graphics)

@@ -1,3 +1,4 @@
+#include "shaders.hpp"
 #include "window.hpp"
 
 #include <cstdlib>
@@ -8,6 +9,9 @@ int main() {
     try {
         graphics::Window window{1280, 720, "Triangles"};
         std::cout << "OpenGL " << window.opengl_version() << '\n';
+
+        const graphics::ShaderProgram shader_program = graphics::create_triangles_shader_program();
+        shader_program.use();
 
         while (!window.should_close()) {
             window.swap_buffers();

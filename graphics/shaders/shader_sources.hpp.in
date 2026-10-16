@@ -1,0 +1,10 @@
+#pragma once
+
+#include <string_view>
+
+namespace graphics::shader_sources {
+
+inline constexpr std::string_view triangles_vertex = R"glsl(@TRIANGLES_VERTEX_SOURCE@)glsl";
+inline constexpr std::string_view triangles_fragment = R"glsl(@TRIANGLES_FRAGMENT_SOURCE@)glsl";
+
+} // namespace graphics::shader_sources
