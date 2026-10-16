@@ -44,6 +44,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     ${TRIANGLES_FRAGMENT_SHADER})
 
 add_library(triangles_graphics STATIC
+    source/camera.cpp
     source/gpu_triangles.cpp
     source/shader_program.cpp
     source/shaders.cpp
@@ -55,3 +56,7 @@ target_link_libraries(triangles_graphics
     PUBLIC glm::glm
     PRIVATE glad glfw)
 triangles_enable_warnings(triangles_graphics)
+
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
