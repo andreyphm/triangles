@@ -17,7 +17,18 @@ FetchContent_Declare(
     GIT_TAG v2.0.8
     GIT_SHALLOW TRUE)
 
-FetchContent_MakeAvailable(glfw glad)
+set(GLM_BUILD_LIBRARY OFF CACHE BOOL "" FORCE)
+set(GLM_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLM_BUILD_INSTALL OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG 1.0.1
+    GIT_SHALLOW TRUE
+    SYSTEM)
+
+FetchContent_MakeAvailable(glfw glad glm)
 
 add_subdirectory(${glad_SOURCE_DIR}/cmake glad_cmake)
 glad_add_library(glad STATIC REPRODUCIBLE API gl:core=3.3 EXTENSIONS NONE)
@@ -40,5 +51,7 @@ add_library(triangles_graphics STATIC
 target_include_directories(triangles_graphics
     PUBLIC headers
     PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
-target_link_libraries(triangles_graphics PRIVATE glad glfw)
+target_link_libraries(triangles_graphics
+    PUBLIC glm::glm
+    PRIVATE glad glfw)
 triangles_enable_warnings(triangles_graphics)
