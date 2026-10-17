@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <istream>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -11,6 +12,20 @@
 namespace geometry {
 
 constexpr std::int64_t triangle_count_limit = 1'000'000;
+
+namespace {
+
+std::optional<Vector3> read_vector(std::istream& input) {
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    if (!(input >> x >> y >> z)) {
+        return std::nullopt;
+    }
+    return Vector3{x, y, z};
+}
+
+} // namespace
 
 TriangleReadResult read_triangles(std::istream& input, std::vector<Triangle>& triangles) {
     std::int64_t triangle_count = 0;
@@ -26,27 +41,15 @@ TriangleReadResult read_triangles(std::istream& input, std::vector<Triangle>& tr
     parsed_triangles.reserve(static_cast<std::size_t>(triangle_count));
 
     for (std::int64_t index = 0; index < triangle_count; ++index) {
-        double first_x  = 0.0;
-        double first_y  = 0.0;
-        double first_z  = 0.0;
-        double second_x = 0.0;
-        double second_y = 0.0;
-        double second_z = 0.0;
-        double third_x  = 0.0;
-        double third_y  = 0.0;
-        double third_z  = 0.0;
+        const std::optional<Vector3> first  = read_vector(input);
+        const std::optional<Vector3> second = read_vector(input);
+        const std::optional<Vector3> third  = read_vector(input);
 
-        if (!(input >> first_x  >> first_y  >> first_z
-                    >> second_x >> second_y >> second_z
-                    >> third_x  >> third_y  >> third_z)) {
+        if (!first || !second || !third) {
             return TriangleReadResult::triangle_read_failed(static_cast<std::size_t>(index + 1));
         }
 
-        const Vector3 first{first_x, first_y, first_z};
-        const Vector3 second{second_x, second_y, second_z};
-        const Vector3 third{third_x, third_y, third_z};
-
-        parsed_triangles.emplace_back(first, second, third);
+        parsed_triangles.emplace_back(*first, *second, *third);
     }
 
     triangles.swap(parsed_triangles);
