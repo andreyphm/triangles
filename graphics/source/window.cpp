@@ -66,7 +66,23 @@ bool Window::should_close() const {
     return glfwWindowShouldClose(handle_) == GLFW_TRUE;
 }
 
+float Window::aspect_ratio() const {
+    int width = 0;
+    int height = 0;
+    glfwGetFramebufferSize(handle_, &width, &height);
+    if (width == 0 || height == 0) {
+        return 1.0f;
+    }
+
+    return static_cast<float>(width) / static_cast<float>(height);
+}
+
 void Window::clear() {
+    int width = 0;
+    int height = 0;
+    glfwGetFramebufferSize(handle_, &width, &height);
+    glViewport(0, 0, width, height);
+
     glClearColor(background_red, background_green, background_blue, background_alpha);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

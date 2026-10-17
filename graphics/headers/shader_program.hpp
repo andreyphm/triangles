@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include <string_view>
 
 namespace graphics {
@@ -13,6 +15,7 @@ public:
     ShaderProgram& operator=(const ShaderProgram&) = delete;
 
     void use() const;
+    void set_uniform(const char* name, const glm::mat4& value) const;
 
 private:
     unsigned int handle_;

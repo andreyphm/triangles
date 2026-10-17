@@ -2,6 +2,9 @@
 
 #include <glad/gl.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <cstddef>
 #include <stdexcept>
 #include <string>
@@ -104,6 +107,16 @@ ShaderProgram::~ShaderProgram() {
 
 void ShaderProgram::use() const {
     glUseProgram(handle_);
+}
+
+void ShaderProgram::set_uniform(const char* name, const glm::mat4& value) const {
+    const GLint location = glGetUniformLocation(handle_, name);
+    if (location == -1) {
+        throw std::runtime_error(std::string{"unknown shader uniform "} + name);
+    }
+
+    glUseProgram(handle_);
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }
 
 } // namespace graphics

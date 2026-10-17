@@ -1,3 +1,4 @@
+#include "camera.hpp"
 #include "gpu_triangles.hpp"
 #include "input_reader.hpp"
 #include "intersection_search.hpp"
@@ -6,10 +7,18 @@
 #include "vertices.hpp"
 #include "window.hpp"
 
+#include <glm/glm.hpp>
+
 #include <cstdlib>
 #include <exception>
 #include <iostream>
 #include <vector>
+
+namespace {
+
+constexpr glm::vec3 start_camera_position{0.0f, 0.0f, 1.5f};
+
+} // namespace
 
 int main() {
     std::ios::sync_with_stdio(false);
@@ -31,10 +40,14 @@ int main() {
         const graphics::GpuTriangles gpu_triangles{
             scene::make_vertices(triangles), scene::make_vertex_colors(intersection_flags)};
 
+        const graphics::Camera camera{start_camera_position, 0.0f, 0.0f};
+
         shader_program.use();
 
         while (!window.should_close()) {
             window.clear();
+            graphics::set_triangles_camera(
+                shader_program, camera.view_matrix(), camera.projection_matrix(window.aspect_ratio()));
             gpu_triangles.draw();
             window.swap_buffers();
             window.poll_events();
