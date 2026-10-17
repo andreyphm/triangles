@@ -8,6 +8,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace geometry {
@@ -58,7 +59,7 @@ TriangleReadResult read_triangles(std::istream& input, std::vector<Triangle>& tr
         parsed_triangles.emplace_back(*first, *second, *third);
     }
 
-    triangles.swap(parsed_triangles);
+    triangles = std::move(parsed_triangles);
     return TriangleReadResult::success();
 }
 
