@@ -21,6 +21,7 @@ namespace {
 
 constexpr glm::vec3 start_camera_position{0.0f, 0.0f, 1.5f};
 constexpr float movement_speed = 0.5f;
+constexpr float sprint_multiplier = 2.0f;
 constexpr float mouse_sensitivity = 0.002f;
 constexpr float max_frame_seconds = 0.1f;
 
@@ -54,7 +55,7 @@ void control_camera(graphics::Window& window, graphics::Camera& camera, float fr
         return;
     }
 
-    window.set_cursor_captured(!window.is_key_pressed(graphics::Key::left_control));
+    window.set_cursor_captured(!window.is_key_pressed(graphics::Key::left_alt));
     const glm::vec2 cursor_movement = window.take_cursor_movement();
     if (window.cursor_captured()) {
         camera.rotate(cursor_movement.x * mouse_sensitivity, -cursor_movement.y * mouse_sensitivity);
@@ -62,7 +63,9 @@ void control_camera(graphics::Window& window, graphics::Camera& camera, float fr
 
     const glm::vec3 direction = movement_direction(window);
     if (direction != glm::vec3(0.0f)) {
-        camera.move(glm::normalize(direction) * movement_speed * frame_seconds);
+        const float speed =
+            window.is_key_pressed(graphics::Key::left_control) ? movement_speed * sprint_multiplier : movement_speed;
+        camera.move(glm::normalize(direction) * speed * frame_seconds);
     }
 }
 

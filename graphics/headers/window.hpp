@@ -17,6 +17,7 @@ enum class Key {
     space,
     left_shift,
     left_control,
+    left_alt,
     escape
 };
 

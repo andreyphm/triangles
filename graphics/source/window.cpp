@@ -63,6 +63,7 @@ int glfw_key(Key key) {
         case Key::space:        return GLFW_KEY_SPACE;
         case Key::left_shift:   return GLFW_KEY_LEFT_SHIFT;
         case Key::left_control: return GLFW_KEY_LEFT_CONTROL;
+        case Key::left_alt:     return GLFW_KEY_LEFT_ALT;
         case Key::escape:       return GLFW_KEY_ESCAPE;
     }
 
