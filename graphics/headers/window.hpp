@@ -1,11 +1,24 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include <functional>
 #include <string>
 
 struct GLFWwindow;
 
 namespace graphics {
+
+enum class Key {
+    w,
+    a,
+    s,
+    d,
+    space,
+    left_shift,
+    left_control,
+    escape
+};
 
 class GlfwLibrary {
 public:
@@ -25,11 +38,17 @@ public:
     Window& operator=(const Window&) = delete;
 
     bool should_close() const;
+    void request_close();
     float aspect_ratio() const;
     void clear();
     void swap_buffers();
     void poll_events();
     void set_redraw_callback(std::function<void()> redraw);
+
+    bool is_key_pressed(Key key) const;
+    bool cursor_captured() const { return cursor_captured_; }
+    void set_cursor_captured(bool captured);
+    glm::vec2 take_cursor_movement();
 
     std::string opengl_version() const;
 
@@ -40,6 +59,8 @@ private:
     GlfwLibrary library_;
     GLFWwindow* handle_;
     std::function<void()> redraw_;
+    bool cursor_captured_ = false;
+    glm::dvec2 last_cursor_position_;
 };
 
 } // namespace graphics

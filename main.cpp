@@ -9,6 +9,9 @@
 
 #include <glm/glm.hpp>
 
+#include <algorithm>
+#include <array>
+#include <chrono>
 #include <cstdlib>
 #include <exception>
 #include <iostream>
@@ -17,6 +20,51 @@
 namespace {
 
 constexpr glm::vec3 start_camera_position{0.0f, 0.0f, 1.5f};
+constexpr float movement_speed = 0.5f;
+constexpr float mouse_sensitivity = 0.002f;
+constexpr float max_frame_seconds = 0.1f;
+
+struct KeyBinding {
+    graphics::Key key;
+    glm::vec3 direction;
+};
+
+constexpr std::array<KeyBinding, 6> movement_bindings{{
+    {graphics::Key::d,          { 1.0f,  0.0f,  0.0f}},
+    {graphics::Key::a,          {-1.0f,  0.0f,  0.0f}},
+    {graphics::Key::space,      { 0.0f,  1.0f,  0.0f}},
+    {graphics::Key::left_shift, { 0.0f, -1.0f,  0.0f}},
+    {graphics::Key::w,          { 0.0f,  0.0f,  1.0f}},
+    {graphics::Key::s,          { 0.0f,  0.0f, -1.0f}}
+}};
+
+glm::vec3 movement_direction(const graphics::Window& window) {
+    glm::vec3 direction{0.0f};
+    for (const KeyBinding& binding : movement_bindings) {
+        if (window.is_key_pressed(binding.key)) {
+            direction += binding.direction;
+        }
+    }
+    return direction;
+}
+
+void control_camera(graphics::Window& window, graphics::Camera& camera, float frame_seconds) {
+    if (window.is_key_pressed(graphics::Key::escape)) {
+        window.request_close();
+        return;
+    }
+
+    window.set_cursor_captured(!window.is_key_pressed(graphics::Key::left_control));
+    const glm::vec2 cursor_movement = window.take_cursor_movement();
+    if (window.cursor_captured()) {
+        camera.rotate(cursor_movement.x * mouse_sensitivity, -cursor_movement.y * mouse_sensitivity);
+    }
+
+    const glm::vec3 direction = movement_direction(window);
+    if (direction != glm::vec3(0.0f)) {
+        camera.move(glm::normalize(direction) * movement_speed * frame_seconds);
+    }
+}
 
 } // namespace
 
@@ -40,7 +88,7 @@ int main() {
         const graphics::GpuTriangles gpu_triangles{
             scene::make_vertices(triangles), scene::make_vertex_colors(intersection_flags)};
 
-        const graphics::Camera camera{start_camera_position, 0.0f, 0.0f};
+        graphics::Camera camera{start_camera_position, 0.0f, 0.0f};
 
         shader_program.use();
 
@@ -53,9 +101,16 @@ int main() {
         };
         window.set_redraw_callback(draw_frame);
 
+        auto previous_frame_time = std::chrono::steady_clock::now();
         while (!window.should_close()) {
-            draw_frame();
             window.poll_events();
+
+            const auto frame_time = std::chrono::steady_clock::now();
+            const float frame_seconds = std::chrono::duration<float>(frame_time - previous_frame_time).count();
+            previous_frame_time = frame_time;
+
+            control_camera(window, camera, std::min(frame_seconds, max_frame_seconds));
+            draw_frame();
         }
     } catch (const std::exception& error) {
         std::cerr << "error: " << error.what() << '\n';

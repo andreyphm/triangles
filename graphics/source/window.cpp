@@ -5,6 +5,8 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+
 #include <functional>
 #include <stdexcept>
 #include <string>
@@ -45,6 +47,28 @@ GLFWwindow* create_window(int width, int height, const char* title) {
     return handle;
 }
 
+glm::dvec2 cursor_position(GLFWwindow* handle) {
+    double x = 0.0;
+    double y = 0.0;
+    glfwGetCursorPos(handle, &x, &y);
+    return {x, y};
+}
+
+int glfw_key(Key key) {
+    switch (key) {
+        case Key::w:            return GLFW_KEY_W;
+        case Key::a:            return GLFW_KEY_A;
+        case Key::s:            return GLFW_KEY_S;
+        case Key::d:            return GLFW_KEY_D;
+        case Key::space:        return GLFW_KEY_SPACE;
+        case Key::left_shift:   return GLFW_KEY_LEFT_SHIFT;
+        case Key::left_control: return GLFW_KEY_LEFT_CONTROL;
+        case Key::escape:       return GLFW_KEY_ESCAPE;
+    }
+
+    throw std::logic_error("invalid key");
+}
+
 } // namespace
 
 GlfwLibrary::GlfwLibrary() {
@@ -58,7 +82,7 @@ GlfwLibrary::~GlfwLibrary() {
 }
 
 Window::Window(int width, int height, const char* title)
-    : handle_(create_window(width, height, title)) {}
+    : handle_(create_window(width, height, title)), last_cursor_position_(cursor_position(handle_)) {}
 
 Window::~Window() {
     glfwDestroyWindow(handle_);
@@ -66,6 +90,10 @@ Window::~Window() {
 
 bool Window::should_close() const {
     return glfwWindowShouldClose(handle_) == GLFW_TRUE;
+}
+
+void Window::request_close() {
+    glfwSetWindowShouldClose(handle_, GLFW_TRUE);
 }
 
 float Window::aspect_ratio() const {
@@ -113,6 +141,27 @@ void Window::handle_refresh(GLFWwindow* handle) {
 
 void Window::handle_framebuffer_resize(GLFWwindow* handle, int, int) {
     handle_refresh(handle);
+}
+
+bool Window::is_key_pressed(Key key) const {
+    return (glfwGetKey(handle_, glfw_key(key)) == GLFW_PRESS);
+}
+
+void Window::set_cursor_captured(bool captured) {
+    if (captured == cursor_captured_) {
+        return;
+    }
+
+    glfwSetInputMode(handle_, GLFW_CURSOR, captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+    cursor_captured_ = captured;
+    last_cursor_position_ = cursor_position(handle_);
+}
+
+glm::vec2 Window::take_cursor_movement() {
+    const glm::dvec2 position = cursor_position(handle_);
+    const glm::dvec2 movement = position - last_cursor_position_;
+    last_cursor_position_ = position;
+    return glm::vec2(movement);
 }
 
 std::string Window::opengl_version() const {
