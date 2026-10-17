@@ -21,8 +21,8 @@ enum class ProjectionPlane {
 };
 
 struct Segment {
-    Vector3 first;
-    Vector3 second;
+    Point3 first;
+    Point3 second;
 };
 
 bool is_zero(PredicateSign sign) {
@@ -46,19 +46,19 @@ bool contains_both_nonzero_signs(const std::array<PredicateSign, 3>& signs) {
     return has_negative && has_positive;
 }
 
-Vector2 project_xy(const Vector3& point) {
+Vector2 project_xy(const Point3& point) {
     return {point.x(), point.y()};
 }
 
-Vector2 project_yz(const Vector3& point) {
+Vector2 project_yz(const Point3& point) {
     return {point.y(), point.z()};
 }
 
-Vector2 project_zx(const Vector3& point) {
+Vector2 project_zx(const Point3& point) {
     return {point.z(), point.x()};
 }
 
-Vector2 project(const Vector3& point, ProjectionPlane projection_plane) {
+Vector2 project(const Point3& point, ProjectionPlane projection_plane) {
     switch (projection_plane) {
         case ProjectionPlane::yz:
             return project_yz(point);
@@ -97,7 +97,7 @@ bool value_is_between(double value, double first, double second) {
     return std::min(first, second) <= value && value <= std::max(first, second);
 }
 
-bool point_on_segment(const Vector3& point, const Segment& segment) {
+bool point_on_segment(const Point3& point, const Segment& segment) {
     const bool collinear_xy = is_zero(orient2d(project_xy(segment.first), project_xy(segment.second), project_xy(point)));
     const bool collinear_yz = is_zero(orient2d(project_yz(segment.first), project_yz(segment.second), project_yz(point)));
     const bool collinear_zx = is_zero(orient2d(project_zx(segment.first), project_zx(segment.second), project_zx(point)));
@@ -109,9 +109,9 @@ bool point_on_segment(const Vector3& point, const Segment& segment) {
 }
 
 ProjectionPlane select_projection_plane(const Triangle& triangle) {
-    const Vector3& first  = triangle.vertex(0);
-    const Vector3& second = triangle.vertex(1);
-    const Vector3& third  = triangle.vertex(2);
+    const Point3& first  = triangle.vertex(0);
+    const Point3& second = triangle.vertex(1);
+    const Point3& third  = triangle.vertex(2);
 
     if (!is_zero(orient2d(project_yz(first), project_yz(second), project_yz(third)))) {
         return ProjectionPlane::yz;
@@ -138,7 +138,7 @@ std::array<Vector2, 3> projected_vertices(const Triangle& triangle, ProjectionPl
         project(triangle.vertex(2), projection_plane)};
 }
 
-bool point_in_triangle(const Vector3& point, const Triangle& triangle) {
+bool point_in_triangle(const Point3& point, const Triangle& triangle) {
     if (!is_zero(orient3d(triangle.vertex(0), triangle.vertex(1), triangle.vertex(2), point))) {
         return false;
     }
@@ -323,12 +323,12 @@ bool area_triangles_intersect(const Triangle& first, const Triangle& second) {
         || any_side_intersects(second, second_sides, first);
 }
 
-using Shape = std::variant<Vector3, Segment, Triangle>;
+using Shape = std::variant<Point3, Segment, Triangle>;
 
 Shape classify(const Triangle& triangle) {
-    const Vector3& first  = triangle.vertex(0);
-    const Vector3& second = triangle.vertex(1);
-    const Vector3& third  = triangle.vertex(2);
+    const Point3& first  = triangle.vertex(0);
+    const Point3& second = triangle.vertex(1);
+    const Point3& third  = triangle.vertex(2);
 
     if (first == second && second == third) {
         return first;
@@ -344,11 +344,11 @@ Shape classify(const Triangle& triangle) {
     return triangle;
 }
 
-bool shapes_intersect(const Vector3& first, const Vector3& second)      { return (first == second); }
-bool shapes_intersect(const Vector3& point, const Segment& segment)     { return point_on_segment(point, segment); }
-bool shapes_intersect(const Segment& segment, const Vector3& point)     { return shapes_intersect(point, segment); }
-bool shapes_intersect(const Vector3& point, const Triangle& triangle)   { return point_in_triangle(point, triangle); }
-bool shapes_intersect(const Triangle& triangle, const Vector3& point)   { return shapes_intersect(point, triangle); }
+bool shapes_intersect(const Point3& first, const Point3& second)        { return (first == second); }
+bool shapes_intersect(const Point3& point, const Segment& segment)      { return point_on_segment(point, segment); }
+bool shapes_intersect(const Segment& segment, const Point3& point)      { return shapes_intersect(point, segment); }
+bool shapes_intersect(const Point3& point, const Triangle& triangle)    { return point_in_triangle(point, triangle); }
+bool shapes_intersect(const Triangle& triangle, const Point3& point)    { return shapes_intersect(point, triangle); }
 bool shapes_intersect(const Segment& first, const Segment& second)      { return segments_intersect(first, second); }
 bool shapes_intersect(const Segment& segment, const Triangle& triangle) { return segment_intersects_triangle(segment, triangle); }
 bool shapes_intersect(const Triangle& triangle, const Segment& segment) { return shapes_intersect(segment, triangle); }

@@ -17,8 +17,8 @@ public:
     }
 
 private:
-    Vector3 min_;
-    Vector3 max_;
+    Point3 min_;
+    Point3 max_;
 };
 
 } // namespace geometry

@@ -141,7 +141,7 @@ void require_finite(const Vector2& first, const Vector2& second, const Vector2& 
     }
 }
 
-void require_finite(const Vector3& first, const Vector3& second, const Vector3& third, const Vector3& fourth) {
+void require_finite(const Point3& first, const Point3& second, const Point3& third, const Point3& fourth) {
     if (!first.is_finite() || !second.is_finite() || !third.is_finite() || !fourth.is_finite()) {
         throw std::invalid_argument("orient3d arguments must be finite");
     }
@@ -176,7 +176,7 @@ PredicateSign orient2d(const Vector2& first, const Vector2& second, const Vector
     return exact_first_x.mul(exact_second_y).sub(exact_first_y.mul(exact_second_x)).sign();
 }
 
-PredicateSign orient3d(const Vector3& first, const Vector3& second, const Vector3& third, const Vector3& fourth) {
+PredicateSign orient3d(const Point3& first, const Point3& second, const Point3& third, const Point3& fourth) {
     require_finite(first, second, third, fourth);
 
     const double first_x  = first.x()  - fourth.x();

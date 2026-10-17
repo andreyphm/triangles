@@ -22,14 +22,14 @@ bool next_is_space_or_end(std::istream& input) {
     return (next == std::istream::traits_type::eof() || std::isspace(next));
 }
 
-std::optional<Vector3> read_vector(std::istream& input) {
+std::optional<Point3> read_point(std::istream& input) {
     double x = 0.0;
     double y = 0.0;
     double z = 0.0;
     if (!(input >> x >> y >> z)) {
         return std::nullopt;
     }
-    return Vector3{x, y, z};
+    return Point3{x, y, z};
 }
 
 } // namespace
@@ -48,9 +48,9 @@ TriangleReadResult read_triangles(std::istream& input, std::vector<Triangle>& tr
     parsed_triangles.reserve(static_cast<std::size_t>(triangle_count));
 
     for (std::int64_t index = 0; index < triangle_count; ++index) {
-        const std::optional<Vector3> first  = read_vector(input);
-        const std::optional<Vector3> second = read_vector(input);
-        const std::optional<Vector3> third  = read_vector(input);
+        const std::optional<Point3> first  = read_point(input);
+        const std::optional<Point3> second = read_point(input);
+        const std::optional<Point3> third  = read_point(input);
 
         if (!first || !second || !third) {
             return TriangleReadResult::triangle_read_failed(static_cast<std::size_t>(index + 1));

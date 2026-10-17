@@ -76,4 +76,6 @@ inline Vector3 operator*(double scalar, Vector3 vector) {
     return vector;
 }
 
+using Point3 = Vector3;
+
 } // namespace geometry

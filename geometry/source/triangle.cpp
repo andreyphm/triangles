@@ -4,7 +4,7 @@
 
 namespace geometry {
 
-Triangle::Triangle(const Vector3& first, const Vector3& second, const Vector3& third)
+Triangle::Triangle(const Point3& first, const Point3& second, const Point3& third)
     : vertices_{first, second, third} {
     if (!first.is_finite() || !second.is_finite() || !third.is_finite()) {
         throw std::invalid_argument("triangle vertices must be finite");
