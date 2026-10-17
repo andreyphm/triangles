@@ -2,6 +2,7 @@
 
 #include "triangle.hpp"
 
+#include <cctype>
 #include <cstdint>
 #include <istream>
 #include <optional>
@@ -14,6 +15,11 @@ namespace geometry {
 constexpr std::int64_t triangle_count_limit = 1'000'000;
 
 namespace {
+
+bool next_is_space_or_end(std::istream& input) {
+    const std::istream::int_type next = input.peek();
+    return (next == std::istream::traits_type::eof() || std::isspace(next));
+}
 
 std::optional<Vector3> read_vector(std::istream& input) {
     double x = 0.0;
@@ -29,7 +35,7 @@ std::optional<Vector3> read_vector(std::istream& input) {
 
 TriangleReadResult read_triangles(std::istream& input, std::vector<Triangle>& triangles) {
     std::int64_t triangle_count = 0;
-    if (!(input >> triangle_count)) {
+    if (!(input >> triangle_count) || !next_is_space_or_end(input)) {
         return TriangleReadResult::count_read_failed();
     }
 

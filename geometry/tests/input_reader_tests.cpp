@@ -82,6 +82,19 @@ TEST(InputReader, rejects_missing_triangle_count) {
     EXPECT_TRUE(triangles.empty());
 }
 
+TEST(InputReader, rejects_triangle_count_followed_by_non_space) {
+    for (const char* text : {"1.5\n0 0 0  1 0 0  0 1 0\n", "1x\n0 0 0  1 0 0  0 1 0\n"}) {
+        std::istringstream input{text};
+        std::vector<Triangle> triangles;
+
+        const TriangleReadResult result = read_triangles(input, triangles);
+
+        EXPECT_EQ(result.status(), TriangleReadStatus::count_read_failed) << "input: " << text;
+        EXPECT_EQ(result.triangle_number(), std::nullopt);
+        EXPECT_TRUE(triangles.empty());
+    }
+}
+
 TEST(InputReader, rejects_triangle_count_out_of_range) {
     for (const char* text : {"0", "-1", "1000000"}) {
         std::istringstream input{text};
