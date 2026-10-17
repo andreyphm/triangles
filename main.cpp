@@ -44,12 +44,17 @@ int main() {
 
         shader_program.use();
 
-        while (!window.should_close()) {
+        const auto draw_frame = [&window, &shader_program, &gpu_triangles, &camera] {
             window.clear();
             graphics::set_triangles_camera(
                 shader_program, camera.view_matrix(), camera.projection_matrix(window.aspect_ratio()));
             gpu_triangles.draw();
             window.swap_buffers();
+        };
+        window.set_redraw_callback(draw_frame);
+
+        while (!window.should_close()) {
+            draw_frame();
             window.poll_events();
         }
     } catch (const std::exception& error) {

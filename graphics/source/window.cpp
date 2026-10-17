@@ -5,8 +5,10 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#include <functional>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace graphics {
 
@@ -93,6 +95,24 @@ void Window::swap_buffers() {
 
 void Window::poll_events() {
     glfwPollEvents();
+}
+
+void Window::set_redraw_callback(std::function<void()> redraw) {
+    redraw_ = std::move(redraw);
+    glfwSetWindowUserPointer(handle_, this);
+    glfwSetWindowRefreshCallback(handle_, handle_refresh);
+    glfwSetFramebufferSizeCallback(handle_, handle_framebuffer_resize);
+}
+
+void Window::handle_refresh(GLFWwindow* handle) {
+    const Window* const window = static_cast<const Window*>(glfwGetWindowUserPointer(handle));
+    if (window->redraw_) {
+        window->redraw_();
+    }
+}
+
+void Window::handle_framebuffer_resize(GLFWwindow* handle, int, int) {
+    handle_refresh(handle);
 }
 
 std::string Window::opengl_version() const {
