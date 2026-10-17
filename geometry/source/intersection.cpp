@@ -8,16 +8,11 @@
 #include <cmath>
 #include <cstddef>
 #include <stdexcept>
+#include <variant>
 
 namespace geometry {
 
 namespace {
-
-enum class TriangleKind {
-    point,
-    segment,
-    area
-};
 
 enum class ProjectionPlane {
     yz,
@@ -76,24 +71,6 @@ Vector2 project(const Vector3& point, ProjectionPlane projection_plane) {
     }
 
     throw std::logic_error("invalid projection plane");
-}
-
-TriangleKind classify(const Triangle& triangle) {
-    const Vector3& first  = triangle.vertex(0);
-    const Vector3& second = triangle.vertex(1);
-    const Vector3& third  = triangle.vertex(2);
-
-    if (first == second && second == third) {
-        return TriangleKind::point;
-    }
-
-    const bool collinear_xy = is_zero(orient2d(project_xy(first), project_xy(second), project_xy(third)));
-    const bool collinear_yz = is_zero(orient2d(project_yz(first), project_yz(second), project_yz(third)));
-    const bool collinear_zx = is_zero(orient2d(project_zx(first), project_zx(second), project_zx(third)));
-
-    return (collinear_xy && collinear_yz && collinear_zx)
-        ? TriangleKind::segment
-        : TriangleKind::area;
 }
 
 Segment longest_side(const Triangle& triangle) {
@@ -346,48 +323,46 @@ bool area_triangles_intersect(const Triangle& first, const Triangle& second) {
         || any_side_intersects(second, second_sides, first);
 }
 
+using Shape = std::variant<Vector3, Segment, Triangle>;
+
+Shape classify(const Triangle& triangle) {
+    const Vector3& first  = triangle.vertex(0);
+    const Vector3& second = triangle.vertex(1);
+    const Vector3& third  = triangle.vertex(2);
+
+    if (first == second && second == third) {
+        return first;
+    }
+
+    const bool collinear_xy = is_zero(orient2d(project_xy(first), project_xy(second), project_xy(third)));
+    const bool collinear_yz = is_zero(orient2d(project_yz(first), project_yz(second), project_yz(third)));
+    const bool collinear_zx = is_zero(orient2d(project_zx(first), project_zx(second), project_zx(third)));
+
+    if (collinear_xy && collinear_yz && collinear_zx) {
+        return longest_side(triangle);
+    }
+    return triangle;
+}
+
+bool shapes_intersect(const Vector3& first, const Vector3& second)      { return (first == second); }
+bool shapes_intersect(const Vector3& point, const Segment& segment)     { return point_on_segment(point, segment); }
+bool shapes_intersect(const Segment& segment, const Vector3& point)     { return shapes_intersect(point, segment); }
+bool shapes_intersect(const Vector3& point, const Triangle& triangle)   { return point_in_triangle(point, triangle); }
+bool shapes_intersect(const Triangle& triangle, const Vector3& point)   { return shapes_intersect(point, triangle); }
+bool shapes_intersect(const Segment& first, const Segment& second)      { return segments_intersect(first, second); }
+bool shapes_intersect(const Segment& segment, const Triangle& triangle) { return segment_intersects_triangle(segment, triangle); }
+bool shapes_intersect(const Triangle& triangle, const Segment& segment) { return shapes_intersect(segment, triangle); }
+bool shapes_intersect(const Triangle& first, const Triangle& second)    { return area_triangles_intersect(first, second); }
+
 } // namespace
 
 bool intersects(const Triangle& first, const Triangle& second) {
-    const TriangleKind first_kind = classify(first);
-    const TriangleKind second_kind = classify(second);
-
-    switch (first_kind) {
-        case TriangleKind::point:
-            switch (second_kind) {
-                case TriangleKind::point:
-                    return first.vertex(0) == second.vertex(0);
-                case TriangleKind::segment:
-                    return point_on_segment(first.vertex(0), longest_side(second));
-                case TriangleKind::area:
-                    return point_in_triangle(first.vertex(0), second);
-            }
-            break;
-
-        case TriangleKind::segment:
-            switch (second_kind) {
-                case TriangleKind::point:
-                    return point_on_segment(second.vertex(0), longest_side(first));
-                case TriangleKind::segment:
-                    return segments_intersect(longest_side(first), longest_side(second));
-                case TriangleKind::area:
-                    return segment_intersects_triangle(longest_side(first), second);
-            }
-            break;
-
-        case TriangleKind::area:
-            switch (second_kind) {
-                case TriangleKind::point:
-                    return point_in_triangle(second.vertex(0), first);
-                case TriangleKind::segment:
-                    return segment_intersects_triangle(longest_side(second), first);
-                case TriangleKind::area:
-                    return area_triangles_intersect(first, second);
-            }
-            break;
-    }
-
-    throw std::logic_error("invalid triangle kind");
+    return std::visit(
+        [](const auto& first_shape, const auto& second_shape) {
+            return shapes_intersect(first_shape, second_shape);
+        },
+        classify(first),
+        classify(second));
 }
 
 } // namespace geometry
