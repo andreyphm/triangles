@@ -38,8 +38,8 @@ bool contains_both_nonzero_signs(const std::array<PredicateSign, 3>& signs) {
     bool has_positive = false;
 
     for (PredicateSign sign : signs) {
-        has_negative = has_negative || sign == PredicateSign::negative;
-        has_positive = has_positive || sign == PredicateSign::positive;
+        has_negative |= (sign == PredicateSign::negative);
+        has_positive |= (sign == PredicateSign::positive);
     }
 
     return has_negative && has_positive;
@@ -214,11 +214,7 @@ bool segment_intersects_coplanar_triangle(const Segment& segment, const Triangle
 
     for (std::size_t index = 0; index < projected_triangle.size(); ++index) {
         const std::size_t next_index = (index + 1) % projected_triangle.size();
-        if (segments_intersect_2d(
-                segment_begin,
-                segment_end,
-                projected_triangle[index],
-                projected_triangle[next_index])) {
+        if (segments_intersect_2d(segment_begin, segment_end, projected_triangle[index], projected_triangle[next_index])) {
             return true;
         }
     }
@@ -239,11 +235,8 @@ bool strictly_on_one_side(const VertexSides& sides) {
     return !is_zero(sides[0]) && sides[0] == sides[1] && sides[1] == sides[2];
 }
 
-bool segment_intersects_triangle(
-    const Segment& segment,
-    PredicateSign first_endpoint_side,
-    PredicateSign second_endpoint_side,
-    const Triangle& triangle) {
+bool segment_intersects_triangle(const Segment& segment, PredicateSign first_endpoint_side,
+                                 PredicateSign second_endpoint_side, const Triangle& triangle) {
     const bool first_endpoint_on_plane = is_zero(first_endpoint_side);
     const bool second_endpoint_on_plane = is_zero(second_endpoint_side);
 
@@ -277,18 +270,15 @@ bool segment_intersects_triangle(const Segment& segment, const Triangle& triangl
         triangle);
 }
 
-Segment side(const Triangle& triangle, std::size_t index) {
+Segment edge_segment(const Triangle& triangle, std::size_t index) {
     return {triangle.vertex(index), triangle.vertex((index + 1) % 3)};
 }
 
-bool any_side_intersects(const Triangle& sides_owner, const VertexSides& owner_vertex_sides, const Triangle& other) {
+bool any_edge_intersects(const Triangle& edges_owner, const VertexSides& owner_vertex_sides, const Triangle& other) {
     for (std::size_t index = 0; index < 3; ++index) {
         const std::size_t next_index = (index + 1) % 3;
-        if (segment_intersects_triangle(
-                side(sides_owner, index),
-                owner_vertex_sides[index],
-                owner_vertex_sides[next_index],
-                other)) {
+        if (segment_intersects_triangle(edge_segment(edges_owner, index), owner_vertex_sides[index],
+                                        owner_vertex_sides[next_index], other)) {
             return true;
         }
     }
@@ -306,8 +296,8 @@ bool area_triangles_intersect(const Triangle& first, const Triangle& second) {
         return false;
     }
 
-    return any_side_intersects(first, first_sides, second)
-        || any_side_intersects(second, second_sides, first);
+    return any_edge_intersects(first, first_sides, second)
+        || any_edge_intersects(second, second_sides, first);
 }
 
 using Shape = std::variant<Point3, Segment, Triangle>;
@@ -347,9 +337,7 @@ bool intersects(const Triangle& first, const Triangle& second) {
     return std::visit(
         [](const auto& first_shape, const auto& second_shape) {
             return shapes_intersect(first_shape, second_shape);
-        },
-        classify(first),
-        classify(second));
+        }, classify(first), classify(second));
 }
 
 } // namespace geometry
