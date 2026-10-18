@@ -131,7 +131,7 @@ cmd /c ".\output\triangles.out.exe < examples\random_cloud.in"
 Ответ — знак определителя: `+`, `-` или `0`. Для `orient3d`:
 
 $$
-\operatorname{orient3d}(a, b, c, d) = \operatorname{sign}
+\mathrm{orient3d}(a, b, c, d) = \mathrm{sign}
 \begin{vmatrix}
 a_x - d_x & a_y - d_y & a_z - d_z \\
 b_x - d_x & b_y - d_y & b_z - d_z \\
