@@ -321,15 +321,15 @@ Shape classify(const Triangle& triangle) {
     return triangle;
 }
 
-bool shapes_intersect(const Point3& first, const Point3& second)        { return (first == second); }
-bool shapes_intersect(const Point3& point, const Segment& segment)      { return point_on_segment(point, segment); }
-bool shapes_intersect(const Segment& segment, const Point3& point)      { return shapes_intersect(point, segment); }
-bool shapes_intersect(const Point3& point, const Triangle& triangle)    { return point_in_triangle(point, triangle); }
-bool shapes_intersect(const Triangle& triangle, const Point3& point)    { return shapes_intersect(point, triangle); }
-bool shapes_intersect(const Segment& first, const Segment& second)      { return segments_intersect(first, second); }
+bool shapes_intersect(const Point3& first, const Point3& second) { return (first == second); }
+bool shapes_intersect(const Point3& point, const Segment& segment) { return point_on_segment(point, segment); }
+bool shapes_intersect(const Segment& segment, const Point3& point) { return shapes_intersect(point, segment); }
+bool shapes_intersect(const Point3& point, const Triangle& triangle) { return point_in_triangle(point, triangle); }
+bool shapes_intersect(const Triangle& triangle, const Point3& point) { return shapes_intersect(point, triangle); }
+bool shapes_intersect(const Segment& first, const Segment& second) { return segments_intersect(first, second); }
 bool shapes_intersect(const Segment& segment, const Triangle& triangle) { return segment_intersects_triangle(segment, triangle); }
 bool shapes_intersect(const Triangle& triangle, const Segment& segment) { return shapes_intersect(segment, triangle); }
-bool shapes_intersect(const Triangle& first, const Triangle& second)    { return area_triangles_intersect(first, second); }
+bool shapes_intersect(const Triangle& first, const Triangle& second) { return area_triangles_intersect(first, second); }
 
 } // namespace
 
