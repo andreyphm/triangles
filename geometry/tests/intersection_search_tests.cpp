@@ -121,3 +121,128 @@ TEST(IntersectionSearch, supports_degenerate_triangles) {
 
     EXPECT_EQ(result, IntersectionFlags({true, true, false}));
 }
+
+namespace {
+
+constexpr double lattice_triangle_size = 0.5;
+
+Triangle lattice_triangle(double x, double y, double z) {
+    return {
+        Vector3{x, y, z},
+        Vector3{x + lattice_triangle_size, y, z},
+        Vector3{x, y + lattice_triangle_size, z}};
+}
+
+Triangle crossing_triangle(double x, double y, double z) {
+    return {
+        Vector3{x + 0.1, y + 0.1, z - 0.2},
+        Vector3{x + 0.1, y + 0.1, z + 0.2},
+        Vector3{x + 0.15, y + 0.15, z + 0.2}};
+}
+
+Triangle point_triangle(double x, double y, double z) {
+    return {Vector3{x, y, z}, Vector3{x, y, z}, Vector3{x, y, z}};
+}
+
+}
+
+TEST(IntersectionSearch, leaves_large_lattice_of_separate_triangles_unmarked) {
+    std::vector<Triangle> triangles;
+    triangles.reserve(990'000);
+    for (int x = 0; x < 100; ++x) {
+        for (int y = 0; y < 100; ++y) {
+            for (int z = 0; z < 99; ++z) {
+                triangles.push_back(lattice_triangle(x, y, z));
+            }
+        }
+    }
+
+    const IntersectionFlags result = find_intersecting_triangles(triangles);
+
+    EXPECT_EQ(result, IntersectionFlags(triangles.size(), false));
+}
+
+TEST(IntersectionSearch, marks_only_crossing_pairs_in_large_lattice) {
+    std::vector<Triangle> triangles;
+    IntersectionFlags expected;
+    for (int x = 0; x < 100; ++x) {
+        for (int y = 0; y < 100; ++y) {
+            for (int z = 0; z < 20; ++z) {
+                const bool crossed = (x + y + z) % 3 == 0;
+                triangles.push_back(lattice_triangle(x, y, z));
+                expected.push_back(crossed);
+                if (crossed) {
+                    triangles.push_back(crossing_triangle(x, y, z));
+                    expected.push_back(true);
+                }
+            }
+        }
+    }
+
+    const IntersectionFlags result = find_intersecting_triangles(triangles);
+
+    EXPECT_EQ(result, expected);
+}
+
+TEST(IntersectionSearch, marks_small_triangles_touched_by_one_huge_triangle) {
+    constexpr int crossed_column = 150;
+    std::vector<Triangle> triangles;
+    IntersectionFlags expected;
+    for (int x = 0; x < 300; ++x) {
+        for (int y = 0; y < 300; ++y) {
+            triangles.push_back(lattice_triangle(x, y, 0.0));
+            expected.push_back(x == crossed_column);
+        }
+    }
+    const double plane_x = crossed_column + 0.25;
+    triangles.push_back({
+        Vector3{plane_x, -10.0, -1.0},
+        Vector3{plane_x, 700.0, -1.0},
+        Vector3{plane_x, -10.0, 1.0}});
+    expected.push_back(true);
+
+    const IntersectionFlags result = find_intersecting_triangles(triangles);
+
+    EXPECT_EQ(result, expected);
+}
+
+TEST(IntersectionSearch, handles_clusters_at_opposite_ends_of_coordinate_range) {
+    constexpr double center = 1e307;
+    constexpr double scale = 1e300;
+    const auto scaled_triangle_at = [](double cluster_center, double offset) {
+        return Triangle{
+            Vector3{cluster_center + offset * scale, cluster_center, cluster_center},
+            Vector3{cluster_center + (offset + 2.0) * scale, cluster_center, cluster_center},
+            Vector3{cluster_center + offset * scale, cluster_center + 2.0 * scale, cluster_center}};
+    };
+    const std::vector<Triangle> triangles{
+        scaled_triangle_at(center, 0.0),
+        scaled_triangle_at(-center, 0.0),
+        scaled_triangle_at(center, 1.0),
+        scaled_triangle_at(-center, 10.0),
+        scaled_triangle_at(center, 10.0),
+        scaled_triangle_at(-center, 1.0)};
+
+    const IntersectionFlags result = find_intersecting_triangles(triangles);
+
+    EXPECT_EQ(result, IntersectionFlags({true, true, true, false, false, true}));
+}
+
+TEST(IntersectionSearch, leaves_separate_points_unmarked) {
+    std::vector<Triangle> triangles;
+    for (int index = 0; index < 10'000; ++index) {
+        triangles.push_back(point_triangle(index, 2.0 * index, 0.0));
+    }
+
+    const IntersectionFlags result = find_intersecting_triangles(triangles);
+
+    EXPECT_EQ(result, IntersectionFlags(triangles.size(), false));
+}
+
+TEST(IntersectionSearch, marks_all_copies_of_same_point) {
+    const std::vector<Triangle> triangles(1'000, point_triangle(1.0, 2.0, 3.0));
+
+    const IntersectionFlags result = find_intersecting_triangles(triangles);
+
+    EXPECT_EQ(result, IntersectionFlags(triangles.size(), true));
+}

@@ -10,6 +10,9 @@ class BoundingBox {
 public:
     explicit BoundingBox(const Triangle& triangle);
 
+    const Point3& min_point() const { return min_; }
+    const Point3& max_point() const { return max_; }
+
     bool overlaps(const BoundingBox& other) const {
         return (min_.x() <= other.max_.x() && other.min_.x() <= max_.x()
              && min_.y() <= other.max_.y() && other.min_.y() <= max_.y()
