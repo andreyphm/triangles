@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <stdexcept>
 #include <variant>
@@ -184,34 +183,22 @@ bool segments_intersect_2d(const Vector2& first_begin, const Vector2& first_end,
         || (is_zero(first_end_side_of_second)   && point_on_segment_2d(first_end, second_begin, second_end));
 }
 
-bool segments_intersect(const Segment& first, const Segment& second) {
-    if (!is_zero(orient3d(first.first, first.second, second.first, second.second))) {
-        return false;
-    }
-
-    const Vector3 first_direction = first.second - first.first;
-    const Vector3 second_direction = second.second - second.first;
-    const Vector3 normal = first_direction.vector_product(second_direction);
-
-    if (normal == Vector3()) {
-        return point_on_segment(first.first, second)
-            || point_on_segment(first.second, second)
-            || point_on_segment(second.first, first)
-            || point_on_segment(second.second, first);
-    }
-
-    ProjectionPlane projection_plane = ProjectionPlane::xy;
-    if (std::abs(normal.x()) >= std::abs(normal.y()) && std::abs(normal.x()) >= std::abs(normal.z())) {
-        projection_plane = ProjectionPlane::yz;
-    } else if (std::abs(normal.y()) >= std::abs(normal.z())) {
-        projection_plane = ProjectionPlane::zx;
-    }
-
+bool projected_segments_intersect(const Segment& first, const Segment& second, ProjectionPlane projection_plane) {
     return segments_intersect_2d(
         project(first.first, projection_plane),
         project(first.second, projection_plane),
         project(second.first, projection_plane),
         project(second.second, projection_plane));
+}
+
+bool segments_intersect(const Segment& first, const Segment& second) {
+    if (!is_zero(orient3d(first.first, first.second, second.first, second.second))) {
+        return false;
+    }
+
+    return projected_segments_intersect(first, second, ProjectionPlane::yz)
+        && projected_segments_intersect(first, second, ProjectionPlane::zx)
+        && projected_segments_intersect(first, second, ProjectionPlane::xy);
 }
 
 bool segment_intersects_coplanar_triangle(const Segment& segment, const Triangle& triangle) {

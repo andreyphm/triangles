@@ -561,3 +561,12 @@ TEST(Intersection, detects_coplanar_vertex_touching_edge_interior_with_large_coo
 
     expect_symmetric_intersection(first, second, true);
 }
+
+TEST(Intersection, detects_nearly_parallel_segments_crossing_with_large_coordinates) {
+    const Vector3 first_end(1836311903.0, 1134903170.0, 0.0);
+    const Vector3 second_end(1134903170.0, 701408733.0, 0.0);
+    const Triangle first = segment_triangle(-first_end, first_end, first_end);
+    const Triangle second = segment_triangle(-second_end, second_end, second_end);
+
+    expect_symmetric_intersection(first, second, true);
+}
