@@ -221,21 +221,21 @@ ctest --test-dir output -L geometry
 
 ```text
 .
-├── CMakeLists.txt                      корневая сборка, GoogleTest
-├── main.cpp                            визуализация
+├── CMakeLists.txt                      # корневая сборка, GoogleTest
+├── main.cpp                            # визуализация
 ├── cmake/
-│   └── warnings.cmake                  общие флаги предупреждений
+│   └── warnings.cmake                  # общие флаги предупреждений
 ├── geometry/
 │   ├── CMakeLists.txt
 │   ├── headers/
-│   │   ├── vector2.hpp                 вектор на плоскости
-│   │   ├── vector3.hpp                 вектор и точка в пространстве
-│   │   ├── triangle.hpp                треугольник
-│   │   ├── bounding_box.hpp            ограничивающий параллелепипед
-│   │   ├── robust_predicates.hpp       точные предикаты orient2d, orient3d
-│   │   ├── intersection.hpp            пересечение двух треугольников
-│   │   ├── intersection_search.hpp     поиск всех пересекающихся треугольников
-│   │   └── input_reader.hpp            чтение ввода
+│   │   ├── vector2.hpp                 # вектор на плоскости
+│   │   ├── vector3.hpp                 # вектор и точка в пространстве
+│   │   ├── triangle.hpp                # треугольник
+│   │   ├── bounding_box.hpp            # ограничивающий параллелепипед
+│   │   ├── robust_predicates.hpp       # точные предикаты orient2d, orient3d
+│   │   ├── intersection.hpp            # пересечение двух треугольников
+│   │   ├── intersection_search.hpp     # поиск всех пересекающихся треугольников
+│   │   └── input_reader.hpp            # чтение ввода
 │   ├── source/
 │   │   ├── triangle.cpp
 │   │   ├── bounding_box.cpp
@@ -254,28 +254,28 @@ ctest --test-dir output -L geometry
 │       └── input_reader_tests.cpp
 ├── cli/
 │   ├── CMakeLists.txt
-│   ├── main.cpp                        консольная версия
+│   ├── main.cpp                        # консольная версия
 │   └── tests/
 │       ├── CMakeLists.txt
-│       ├── run_e2e.cmake               запуск triangles_cli и сверка ответа
-│       └── data/                       пары *.in / *.out
+│       ├── run_e2e.cmake               # запуск triangles_cli и сверка ответа
+│       └── data/                       # пары *.in / *.out
 ├── scene/
 │   ├── CMakeLists.txt
 │   ├── headers/
-│   │   └── vertices.hpp                координаты и цвета вершин для отрисовки
+│   │   └── vertices.hpp                # координаты и цвета вершин для отрисовки
 │   ├── source/
 │   │   └── vertices.cpp
 │   └── tests/
 │       ├── CMakeLists.txt
 │       └── vertices_tests.cpp
 ├── graphics/
-│   ├── CMakeLists.txt                  GLFW, glad, GLM
+│   ├── CMakeLists.txt                  # GLFW, glad, GLM
 │   ├── headers/
-│   │   ├── window.hpp                  окно и ввод
-│   │   ├── shader_program.hpp          шейдерная программа
-│   │   ├── shaders.hpp                 исходники шейдеров
-│   │   ├── gpu_triangles.hpp           буферы вершин на видеокарте
-│   │   └── camera.hpp                  камера
+│   │   ├── window.hpp                  # окно и ввод
+│   │   ├── shader_program.hpp          # шейдерная программа
+│   │   ├── shaders.hpp                 # исходники шейдеров
+│   │   ├── gpu_triangles.hpp           # буферы вершин на видеокарте
+│   │   └── camera.hpp                  # камера
 │   ├── source/
 │   │   ├── window.cpp
 │   │   ├── shader_program.cpp
@@ -283,11 +283,11 @@ ctest --test-dir output -L geometry
 │   │   ├── gpu_triangles.cpp
 │   │   └── camera.cpp
 │   ├── shaders/
-│   │   ├── triangles_vertex.glsl       вершинный шейдер
-│   │   ├── triangles_fragment.glsl     фрагментный шейдер
-│   │   └── shader_sources.hpp.in       шаблон заголовка с текстом шейдеров
+│   │   ├── triangles_vertex.glsl       # вершинный шейдер
+│   │   ├── triangles_fragment.glsl     # фрагментный шейдер
+│   │   └── shader_sources.hpp.in       # шаблон заголовка с текстом шейдеров
 │   └── tests/
 │       ├── CMakeLists.txt
 │       └── camera_tests.cpp
-└── examples/                           сцены для запуска
+└── examples/                           # сцены для запуска
 ```
