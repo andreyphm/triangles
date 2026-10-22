@@ -4,7 +4,8 @@ set(GEOMETRY_SOURCES
     source/intersection.cpp
     source/intersection_search.cpp
     source/robust_predicates.cpp
-    source/triangle.cpp)
+    source/triangle.cpp
+    source/uniform_grid.cpp)
 
 add_library(triangles_geometry STATIC ${GEOMETRY_SOURCES})
 target_include_directories(triangles_geometry PUBLIC headers)
