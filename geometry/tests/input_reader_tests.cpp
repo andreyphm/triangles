@@ -136,6 +136,32 @@ TEST(InputReader, reports_triangle_with_non_numeric_coordinate) {
     EXPECT_TRUE(triangles.empty());
 }
 
+TEST(InputReader, accepts_leading_plus_sign) {
+    std::istringstream input{"+1\n+0 0 0  +1.5 0 0  0 +1e1 0\n"};
+    std::vector<Triangle> triangles;
+
+    const TriangleReadResult result = read_triangles(input, triangles);
+
+    ASSERT_TRUE(result.is_success());
+    ASSERT_EQ(triangles.size(), 1);
+    EXPECT_EQ(triangles[0].vertex(1), Vector3(1.5, 0.0, 0.0));
+    EXPECT_EQ(triangles[0].vertex(2), Vector3(0.0, 10.0, 0.0));
+}
+
+TEST(InputReader, rejects_malformed_coordinate_words) {
+    for (const char* coordinate : {"+-1", "++1", "+", "1.5.3", "1x", "0x10", "1e400"}) {
+        std::istringstream input{
+            std::string{"1\n0 0 0  1 0 0  0 1 "} + coordinate
+        };
+        std::vector<Triangle> triangles;
+
+        const TriangleReadResult result = read_triangles(input, triangles);
+
+        EXPECT_EQ(result.status(), TriangleReadStatus::triangle_read_failed) << "coordinate: " << coordinate;
+        EXPECT_EQ(result.triangle_number(), 1);
+    }
+}
+
 TEST(InputReader, treats_non_finite_coordinate_as_triangle_read_error) {
     for (const char* coordinate : {"nan", "inf", "-inf"}) {
         std::istringstream input{
