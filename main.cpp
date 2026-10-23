@@ -88,8 +88,7 @@ int main() {
         std::cout << "OpenGL " << window.opengl_version() << '\n';
 
         const graphics::ShaderProgram shader_program = graphics::create_triangles_shader_program();
-        const graphics::GpuTriangles gpu_triangles{
-            scene::make_vertices(triangles), scene::make_vertex_colors(intersection_flags)};
+        const graphics::GpuTriangles gpu_triangles{scene::make_vertices(triangles), scene::make_vertex_colors(intersection_flags)};
 
         graphics::Camera camera{start_camera_position, 0.0f, 0.0f};
 

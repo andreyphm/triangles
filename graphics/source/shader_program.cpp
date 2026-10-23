@@ -38,7 +38,7 @@ std::string program_info_log(GLuint program) {
 
 GLuint compile_shader(GLenum type, std::string_view source) {
     const GLuint shader = glCreateShader(type);
-    if (shader == 0) {
+    if (!shader) {
         throw std::runtime_error(std::string{"failed to create "} + shader_name(type));
     }
 
@@ -77,7 +77,7 @@ GLuint create_program(std::string_view vertex_source, std::string_view fragment_
     const Shader fragment_shader{GL_FRAGMENT_SHADER, fragment_source};
 
     const GLuint program = glCreateProgram();
-    if (program == 0) {
+    if (!program) {
         throw std::runtime_error("failed to create shader program");
     }
 

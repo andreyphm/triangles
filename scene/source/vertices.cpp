@@ -15,7 +15,7 @@ namespace {
 constexpr std::size_t vertices_per_triangle = 3;
 constexpr std::size_t coordinates_per_vertex = 3;
 constexpr std::size_t components_per_color = 3;
-constexpr double scene_half_size = 0.5;
+constexpr double normalized_scene_half_size = 0.5;
 
 struct SceneBounds {
     geometry::Vector3 min;
@@ -37,8 +37,8 @@ SceneBounds find_scene_bounds(const std::vector<geometry::Triangle>& triangles) 
     return {min, max};
 }
 
-float to_scene_coordinate(double offset, double largest_half_extent) {
-    return static_cast<float>(offset / largest_half_extent * scene_half_size);
+float to_scene_coordinate(double offset, double largest_half_size) {
+    return static_cast<float>(offset / largest_half_size * normalized_scene_half_size);
 }
 
 } // namespace
@@ -52,10 +52,10 @@ std::vector<float> make_vertices(const std::vector<geometry::Triangle>& triangle
 
     const SceneBounds bounds = find_scene_bounds(triangles);
     const geometry::Vector3 center = 0.5 * bounds.min + 0.5 * bounds.max;
-    const geometry::Vector3 half_extent = 0.5 * bounds.max - 0.5 * bounds.min;
-    const double largest_half_extent = std::max({half_extent.x(), half_extent.y(), half_extent.z()});
+    const geometry::Vector3 half_size = 0.5 * bounds.max - 0.5 * bounds.min;
+    const double largest_half_size = std::max({half_size.x(), half_size.y(), half_size.z()});
 
-    if (largest_half_extent == 0.0) {
+    if (largest_half_size == 0.0) {
         return std::vector<float>(coordinate_count, 0.0f);
     }
 
@@ -65,9 +65,9 @@ std::vector<float> make_vertices(const std::vector<geometry::Triangle>& triangle
     for (const geometry::Triangle& triangle : triangles) {
         for (std::size_t index = 0; index < vertices_per_triangle; ++index) {
             const geometry::Vector3 offset = triangle.vertex(index) - center;
-            vertices.push_back(to_scene_coordinate(offset.x(), largest_half_extent));
-            vertices.push_back(to_scene_coordinate(offset.y(), largest_half_extent));
-            vertices.push_back(to_scene_coordinate(offset.z(), largest_half_extent));
+            vertices.push_back(to_scene_coordinate(offset.x(), largest_half_size));
+            vertices.push_back(to_scene_coordinate(offset.y(), largest_half_size));
+            vertices.push_back(to_scene_coordinate(offset.z(), largest_half_size));
         }
     }
 

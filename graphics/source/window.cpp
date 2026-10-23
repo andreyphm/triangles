@@ -32,11 +32,12 @@ GLFWwindow* create_window(int width, int height, const char* title) {
 
     GLFWwindow* const handle = glfwCreateWindow(width, height, title, nullptr, nullptr);
     if (!handle) {
-        throw std::runtime_error("failed to create window with OpenGL 3.3 core context");
+        throw std::runtime_error("failed to create window with OpenGL " + std::to_string(opengl_major_version)
+                                + "." + std::to_string(opengl_minor_version) + " core context");
     }
 
     glfwMakeContextCurrent(handle);
-    if (gladLoadGL(glfwGetProcAddress) == 0) {
+    if (!gladLoadGL(glfwGetProcAddress)) {
         glfwDestroyWindow(handle);
         throw std::runtime_error("failed to load OpenGL functions");
     }
