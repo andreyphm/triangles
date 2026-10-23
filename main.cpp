@@ -88,7 +88,7 @@ int main() {
         std::cout << "OpenGL " << window.opengl_version() << '\n';
 
         const graphics::ShaderProgram shader_program = graphics::create_triangles_shader_program();
-        const graphics::GpuTriangles gpu_triangles{scene::make_vertices(triangles), scene::make_vertex_colors(intersection_flags)};
+        const graphics::GpuTriangles gpu_triangles{scene::make_vertices(triangles, intersection_flags)};
 
         graphics::Camera camera{start_camera_position, 0.0f, 0.0f};
 
@@ -96,8 +96,7 @@ int main() {
 
         const auto draw_frame = [&window, &shader_program, &gpu_triangles, &camera] {
             window.clear();
-            graphics::set_triangles_camera(
-                shader_program, camera.view_matrix(), camera.projection_matrix(window.aspect_ratio()));
+            graphics::set_triangles_camera(shader_program, camera.view_matrix(), camera.projection_matrix(window.aspect_ratio()));
             gpu_triangles.draw();
             window.swap_buffers();
         };

@@ -1,13 +1,14 @@
 #pragma once
 
-#include <cstdint>
+#include "vertex.hpp"
+
 #include <span>
 
 namespace graphics {
 
 class GpuTriangles {
 public:
-    GpuTriangles(std::span<const float> vertex_coordinates, std::span<const std::uint8_t> vertex_colors);
+    explicit GpuTriangles(std::span<const Vertex> vertices);
     ~GpuTriangles();
 
     GpuTriangles(const GpuTriangles&) = delete;
@@ -17,8 +18,7 @@ public:
 
 private:
     int vertex_count_;
-    unsigned int coordinate_buffer_;
-    unsigned int color_buffer_;
+    unsigned int vertex_buffer_;
     unsigned int vertex_array_;
 };
 
