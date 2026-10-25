@@ -13,8 +13,8 @@ namespace {
 constexpr glm::vec3 world_up{0.0f, 1.0f, 0.0f};
 constexpr float pitch_limit_degrees = 89.0f;
 constexpr float field_of_view_degrees = 60.0f;
-constexpr float near_plane = 0.01f;
-constexpr float far_plane = 100.0f;
+constexpr float near_plane = 0.001f;
+constexpr float far_plane = 20.0f;
 
 float clamp_pitch(float pitch) {
     const float limit = glm::radians(pitch_limit_degrees);
