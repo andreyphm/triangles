@@ -1,7 +1,7 @@
 <h1 align="center">Triangles</h1>
 
 <p align="center">
-  Поиск пересекающихся треугольников в 3D с точной арифметикой и OpenGL-визуализацией сцены
+  Finding intersecting triangles in 3D using exact arithmetic, and visualizing them in OpenGL
 </p>
 
 <p align="center">
@@ -11,50 +11,50 @@
 </p>
 
 <p align="center">
-  <img alt="Полёт камеры по сцене с выделенными пересекающимися треугольниками" src="assets/scene.gif" width="800">
+  <img alt="Camera flying through a scene with intersecting triangles highlighted" src="assets/scene.gif" width="800">
 </p>
 
 ---
 
-Программа получает на вход набор треугольников в пространстве и находит все, которые пересекаются хотя бы с одним другим. Визуализация показывает сцену в окне OpenGL и выделяет пересекающиеся треугольники цветом; по сцене можно свободно летать камерой. Консольная версия печатает номера пересекающихся треугольников.
+Given a set of triangles in 3D space, the program finds every triangle that intersects at least one other. The visualizer renders the scene in an OpenGL window with intersecting triangles highlighted, and lets you fly around it freely. The command-line version prints the indices of the intersecting triangles.
 
-- Касание вершиной или ребром считается пересечением.
-- Вырожденные треугольники — точки и отрезки — обрабатываются наравне с обычными.
-- Все решения принимаются по знакам **точных** геометрических предикатов, поэтому ответ не зависит от ошибок округления.
+- Touching at a vertex or along an edge counts as an intersection.
+- Degenerate triangles — points and segments — are handled like any other.
+- Every decision is based on the signs of **exact** geometric predicates, so the answer never depends on rounding errors.
 
-## Содержание
+## Contents
 
-- [Быстрый старт](#быстрый-старт)
-- [Использование](#использование)
-- [Геометрия](#геометрия)
-  - [Постановка задачи](#постановка-задачи)
-  - [Точные предикаты для определения пересечений](#точные-предикаты-для-определения-пересечений)
-  - [Пересечение двух треугольников](#пересечение-двух-треугольников)
-  - [Поиск пересекающихся треугольников](#поиск-пересекающихся-треугольников)
-- [Визуализация](#визуализация)
-  - [Управление](#управление)
-  - [Цветовые темы](#цветовые-темы)
-  - [Как устроена отрисовка](#как-устроена-отрисовка)
-- [Тестирование](#тестирование)
-- [Структура проекта](#структура-проекта)
+- [Getting started](#getting-started)
+- [Usage](#usage)
+- [Geometry](#geometry)
+  - [Problem statement](#problem-statement)
+  - [Exact predicates](#exact-predicates)
+  - [Intersecting two triangles](#intersecting-two-triangles)
+  - [Finding all intersecting triangles](#finding-all-intersecting-triangles)
+- [Visualizer](#visualizer)
+  - [Controls](#controls)
+  - [Color themes](#color-themes)
+  - [How rendering works](#how-rendering-works)
+- [Testing](#testing)
+- [Project layout](#project-layout)
 
-## Быстрый старт
+## Getting started
 
 > [!NOTE]
-> Сборка и тесты проверены под Windows ([MSYS2](https://www.msys2.org/) UCRT64) и Linux (Ubuntu 24.04).
+> The build and tests are verified on Windows ([MSYS2](https://www.msys2.org/) UCRT64) and Linux (Ubuntu 24.04).
 
-Требования:
+Requirements:
 
-| Что | Версия | Зачем |
+| Tool | Version | Used for |
 |---|---|---|
-| Компилятор GCC | с поддержкой C++20, проверено на GCC 13 | сборка |
-| [CMake](https://cmake.org/) | 3.16+ | сборка, загрузка зависимостей |
-| [Ninja](https://ninja-build.org/) | любая | генератор сборки |
-| Python | 3.10+ | e2e-тесты и генератор сцен |
-| Jinja2 | любая | генерация загрузчика OpenGL ([glad](https://github.com/Dav1dde/glad)) |
-| Видеокарта | OpenGL 3.3 core | окно визуализации |
+| GCC | C++20 support, tested with GCC 13 | building |
+| [CMake](https://cmake.org/) | 3.16+ | building, fetching dependencies |
+| [Ninja](https://ninja-build.org/) | any | build generator |
+| Python | 3.10+ | e2e tests and the scene generator |
+| Jinja2 | any | generating the OpenGL loader ([glad](https://github.com/Dav1dde/glad)) |
+| GPU | OpenGL 3.3 core | the visualizer window |
 
-Библиотеки (GLFW, glad, GLM, GoogleTest) подключаются автоматически при первой конфигурации.
+The libraries (GLFW, glad, GLM, GoogleTest) are fetched automatically on the first configure.
 
 ```bash
 git clone https://github.com/andreyphm/triangles.git
@@ -63,13 +63,13 @@ cd triangles
 
 ### Windows (MSYS2 UCRT64)
 
-Установка инструментов в терминале MSYS2 UCRT64:
+Install the toolchain from an MSYS2 UCRT64 terminal:
 
 ```bash
 pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-python-jinja2
 ```
 
-Сборка:
+Build:
 
 ```bash
 cmake -S . -B build
@@ -78,58 +78,58 @@ cmake --build build
 
 ### Linux (Ubuntu 24.04)
 
-Установка инструментов, пакеты X11 и Wayland нужны для сборки GLFW:
+Install the toolchain. The X11 and Wayland packages are needed to build GLFW:
 
 ```bash
 sudo apt install -y build-essential cmake ninja-build git pkg-config python3 python3-jinja2 libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev libwayland-dev libwayland-bin wayland-protocols libgl1-mesa-dev
 ```
 
-Сборка:
+Build:
 
 ```bash
 cmake -S . -B build
 cmake --build build
 ```
 
-## Использование
+## Usage
 
 ### Windows
 
-Консольная версия:
+Command-line version:
 
 ```powershell
 cmd /c ".\build\cli\triangles_cli.exe < examples\cloud_5k.in"
 ```
 
-Визуализация (можно выбрать [цветовую тему](#цветовые-темы)):
+Visualizer (optionally with a [color theme](#color-themes)):
 
 ```powershell
 cmd /c ".\build\triangles.out.exe [--theme ...] < examples\cloud_5k.in"
 ```
 
 > [!TIP]
-> В PowerShell нет перенаправления ввода `<`, а конвейер `Get-Content файл | программа` портит ввод. Поэтому запуск идёт через `cmd /c`. В терминале MSYS2 можно писать как обычно: `./build/triangles.out < examples/cloud_5k.in`.
+> PowerShell has no `<` input redirection, and piping with `Get-Content file | program` corrupts the input, so the programs are launched through `cmd /c`. In an MSYS2 terminal the usual syntax works: `./build/triangles.out < examples/cloud_5k.in`.
 
 ### Linux
 
-Консольная версия:
+Command-line version:
 
 ```bash
 ./build/cli/triangles_cli < examples/cloud_5k.in
 ```
 
-Визуализация:
+Visualizer:
 
 ```bash
 ./build/triangles.out [--theme ...] < examples/cloud_5k.in
 ```
 
 > [!NOTE]
-> В WSL окно работает через WSLg: мышь поворачивает камеру, но курсор остаётся видимым. Это ограничение WSLg, а не программы.
+> Under WSL the window runs through WSLg: the mouse turns the camera, but the cursor stays visible. This is a WSLg limitation, not a bug in the program.
 
-### Формат ввода
+### Input format
 
-Первое число — количество треугольников `N`, `0 < N < 1'000'000`. Затем `N` треугольников по 9 координат: три вершины по `x y z`. Переводы строк произвольные.
+The first number is the triangle count `N`, `0 < N < 1'000'000`. It is followed by `N` triangles of 9 coordinates each: three vertices as `x y z`. Line breaks can go anywhere.
 
 ```text
 3
@@ -138,66 +138,66 @@ cmd /c ".\build\triangles.out.exe [--theme ...] < examples\cloud_5k.in"
 5 5 5  6 5 5  5 6 5
 ```
 
-### Формат вывода
+### Output format
 
-**Консольная версия** печатает номера пересекающихся треугольников — с нуля, по возрастанию, по одному в строке. Для примера выше первые два треугольника касаются вершиной `(1, 0, 0)`, третий лежит отдельно:
+The **command-line version** prints the indices of the intersecting triangles — zero-based, in ascending order, one per line. In the example above the first two triangles touch at the vertex `(1, 0, 0)` and the third one stands apart:
 
 ```text
 0
 1
 ```
 
-**Визуализация** печатает версию OpenGL и открывает окно со сценой, в котором пересекающиеся треугольники выделены цветом.
+The **visualizer** prints the OpenGL version and opens a window with the scene, where intersecting triangles are highlighted.
 
-Если ввод ошибочный — нечисловое значение, `N` вне диапазона, треугольников меньше, чем заявлено, — обе программы печатают сообщение в поток ошибок и завершаются с кодом `1`. Визуализация также завершается, если передан неизвестный аргумент или имя темы, и печатает подсказку.
+On invalid input — a non-numeric value, `N` out of range, fewer triangles than announced — both programs print a message to stderr and exit with code `1`. The visualizer also exits with a usage hint when given an unknown argument or theme name.
 
-### Примеры сцен
+### Example scenes
 
-В [`examples/`](examples) лежат случайные сцены:
+[`examples/`](examples) contains random scenes:
 
-| Файл | Треугольников | Что внутри |
+| File | Triangles | Contents |
 |---|---:|---|
-| `cloud_5k.in` | 5 000 | сцена размером ~40, треугольники близкого размера ~1 |
-| `mixed_sizes_10k.in` | 10 000 | сцена ~75, треугольники от ~0.1 до ~4 |
-| `tiny_cloud_20k.in` | 20 000 | очень маленькие координаты: сцена ~0.1 |
-| `huge_cloud_50k.in` | 50 000 | очень большие координаты: сцена ~10⁶ |
+| `cloud_5k.in` | 5,000 | scene ~40 across, triangles of similar size ~1 |
+| `mixed_sizes_10k.in` | 10,000 | scene ~75 across, triangles from ~0.1 to ~4 |
+| `tiny_cloud_20k.in` | 20,000 | very small coordinates: scene ~0.1 across |
+| `huge_cloud_50k.in` | 50,000 | very large coordinates: scene ~10⁶ across |
 
-Свои сцены можно сгенерировать скриптом [`tools/generate_scene.py`](tools/generate_scene.py). Центры треугольников случайно разбрасываются по кубу `[0, SIZE]³`, а каждая вершина отстоит от центра не больше чем на размер треугольника по каждой оси:
+You can generate your own scenes with [`tools/generate_scene.py`](tools/generate_scene.py). Triangle centers are scattered randomly over the cube `[0, SIZE]³`, and each vertex lies within the triangle size of its center along every axis:
 
 ```bash
 python tools/generate_scene.py --count 5000 --scene-size 100 --triangle-size 1 3 --seed 1 --output examples/my_scene.in
 ```
 
-| Аргумент | Смысл |
+| Argument | Meaning |
 |---|---|
-| `--count` | число треугольников, от 1 до 999 999 |
-| `--scene-size` | ребро куба, в котором лежат центры треугольников |
-| `--triangle-size` | размеры треугольников: одно число или диапазон `MIN MAX` |
-| `--seed` | зерно генератора случайных чисел, по умолчанию `1` |
-| `--output` | файл, в который записывается сцена |
+| `--count` | number of triangles, from 1 to 999,999 |
+| `--scene-size` | edge of the cube that contains the triangle centers |
+| `--triangle-size` | triangle size: a single value or a `MIN MAX` range |
+| `--seed` | random generator seed, `1` by default |
+| `--output` | file to write the scene to |
 
-## Геометрия
+## Geometry
 
-### Постановка задачи
+### Problem statement
 
-Треугольник понимается как замкнутая фигура: граница вместе с внутренностью. Два треугольника пересекаются, если у них есть хотя бы одна общая точка.
+A triangle is a closed shape: its boundary together with its interior. Two triangles intersect if they share at least one point.
 
-Три вершины не обязаны образовывать настоящий треугольник:
+Three vertices do not have to form a proper triangle:
 
-- если все три вершины совпадают, треугольник — **точка**;
-- если вершины лежат на одной прямой, треугольник — **отрезок**;
-- иначе это **невырожденный треугольник**, т.е. треугольник в классическом понимании.
+- if all three vertices coincide, the triangle is a **point**;
+- if they lie on one line, it is a **segment**;
+- otherwise it is a **non-degenerate triangle** — a triangle in the usual sense.
 
-### Точные предикаты для определения пересечений
+### Exact predicates
 
-Реализация: [`geometry/source/robust_predicates.cpp`](geometry/source/robust_predicates.cpp).
+Implementation: [`geometry/source/robust_predicates.cpp`](geometry/source/robust_predicates.cpp).
 
-Всё распознавание пересечений построено на одном вопросе: *с какой стороны лежит точка?*
+All intersection checks come down to a single question: *which side is the point on?*
 
-- **`orient3d(a, b, c, d)`** — с какой стороны от плоскости, проходящей через `a`, `b`, `c`, лежит точка `d`?
-- **`orient2d(a, b, c)`** — то же на плоскости: с какой стороны от прямой `ab` лежит точка `c`?
+- **`orient3d(a, b, c, d)`** — which side of the plane through `a`, `b`, `c` is the point `d` on?
+- **`orient2d(a, b, c)`** — the same in the plane: which side of the line `ab` is the point `c` on?
 
-Ответ — знак определителя: `+`, `-` или `0`. Для `orient3d`:
+The answer is the sign of a determinant: `+`, `-` or `0`. For `orient3d`:
 
 $$
 \mathrm{orient3d}(a, b, c, d) = \mathrm{sign}
@@ -208,244 +208,244 @@ c_x - d_x & c_y - d_y & c_z - d_z
 \end{vmatrix}
 $$
 
-Ноль означает, что четыре точки лежат в одной плоскости.
+Zero means the four points are coplanar.
 
-Определитель, посчитанный в `double`, содержит ошибку округления, и рядом с нулём она может дать `+` или `-` вместо `0` — а ноль и есть касание. Ранняя версия проекта считала в обычном `double` и на касаниях с большими координатами примерно в 9% случаев отвечала «не пересекаются»; эти входы закреплены в регрессионных тестах.
+A determinant computed in `double` carries rounding error, and near zero that error can turn `0` into `+` or `-` — while zero is exactly the touching case. An early version of the project used plain `double` and reported "no intersection" in about 9% of touching cases with large coordinates; those inputs are now pinned down by regression tests.
 
-#### Как считается знак
+#### Computing the sign
 
-Подход взят из работы Дж. Шевчука [*Adaptive Precision Floating-Point Arithmetic and Fast Robust Geometric Predicates*](https://www.cs.cmu.edu/~quake/robust.html).
+The approach follows J. Shewchuk, [*Adaptive Precision Floating-Point Arithmetic and Fast Robust Geometric Predicates*](https://www.cs.cmu.edu/~quake/robust.html).
 
-1. **Быстрый путь.** Определитель считается в `double` и сравнивается с гарантированной верхней оценкой ошибки округления. Оценка пропорциональна сумме модулей слагаемых определителя. Если модуль результата больше оценки, знак не может быть искажён. На реальных данных это почти все вызовы.
-2. **Точный путь.** Иначе определитель пересчитывается без округлений. Число записывается как точная сумма нескольких `double`, которые не перекрываются по разрядам. Сумму и произведение двух `double` можно записать точно как пару «округлённый результат + его ошибка», и из таких пар собирается весь определитель. Знак такой суммы равен знаку её самого большого по модулю слагаемого.
+1. **Fast path.** The determinant is computed in `double` and compared against a guaranteed upper bound on its rounding error. The bound is proportional to the sum of the absolute values of the determinant's terms. If the absolute value of the result is larger than the bound, rounding cannot have changed its sign. On real data this covers almost every call.
+2. **Exact path.** Otherwise the determinant is recomputed without any rounding. A number is represented as an exact sum of several `double`s whose bits do not overlap. The sum or product of two `double`s can be written exactly as a pair "rounded result + its error", and the whole determinant is assembled from such pairs. The sign of the sum is the sign of its component with the largest absolute value.
 
-Бесконечность и `NaN` в аргументах считаются ошибкой.
+Infinity and `NaN` arguments are treated as errors.
 
 > [!IMPORTANT]
-> Точный путь опирается на то, что каждая операция округляется ровно так, как записана. Поэтому файл предикатов собирается со строгой плавающей точкой (`-ffp-contract=off`, `-fno-fast-math`): компилятору запрещено сливать умножение со сложением и переставлять операции.
+> The exact path relies on every operation being rounded exactly as written. That is why the predicates file is compiled with strict floating point (`-ffp-contract=off`, `-fno-fast-math`): the compiler may not fuse a multiply with an add or reorder operations.
 
-### Пересечение двух треугольников
+### Intersecting two triangles
 
-Реализация: [`geometry/source/intersection.cpp`](geometry/source/intersection.cpp).
+Implementation: [`geometry/source/intersection.cpp`](geometry/source/intersection.cpp).
 
-#### Классификация
+#### Classification
 
-Сначала определяется тип каждого треугольника: точка, отрезок или невырожденный треугольник.
+First, each triangle is classified as a point, a segment, or a non-degenerate triangle.
 
-Дальше пара фигур сводится к одному из шести случаев:
+A pair of shapes then falls into one of six cases:
 
-|  | Точка | Отрезок | Треугольник |
+|  | Point | Segment | Triangle |
 |---|:---:|:---:|:---:|
-| **Точка** | совпадение | точка на отрезке | точка в треугольнике |
-| **Отрезок** | | отрезок и отрезок | отрезок и треугольник |
-| **Треугольник** | | | треугольник и треугольник |
+| **Point** | coincidence | point on segment | point in triangle |
+| **Segment** | | segment vs segment | segment vs triangle |
+| **Triangle** | | | triangle vs triangle |
 
-#### Точка
+#### Point
 
-- **Точка и точка** пересекаются, если совпадают все координаты.
-- **Точка на отрезке:** точка лежит на прямой, проходящей через концы отрезка (проверяется по трём проекциям), и по каждой координате находится между концами.
-- **Точка в треугольнике:** точка лежит в плоскости треугольника (`orient3d = 0`). Затем треугольник и точка проецируются на ту координатную плоскость, где проекция треугольника не вырождена. Точка внутри или на границе, если относительно трёх рёбер она не оказывается одновременно слева от одного и справа от другого.
+- **Point and point** intersect if all their coordinates are equal.
+- **Point on segment:** the point lies on the line through the segment's endpoints (checked in all three projections) and lies between the endpoints along every coordinate.
+- **Point in triangle:** the point lies in the triangle's plane (`orient3d = 0`). The triangle and the point are then projected onto a coordinate plane where the triangle's projection is not degenerate. The point is inside or on the boundary unless it is to the left of one edge and to the right of another.
 
-#### Отрезок и отрезок
+#### Segment and segment
 
-1. Четыре конца должны лежать в одной плоскости, иначе отрезки скрещиваются и общих точек нет.
-2. Отрезки проецируются на три координатные плоскости, и пересечение должно найтись **в каждой** проекции.
+1. The four endpoints must be coplanar; otherwise the segments are skew and share no points.
+2. The segments are projected onto all three coordinate planes, and they must intersect in **every** projection.
 
-Пересечение двух отрезков на плоскости:
+Two segments in the plane intersect if:
 
-- концы каждого лежат строго по разные стороны от прямой другого — отрезки пересекаются крестом;
-- иначе пересечение есть только в том случае, если какой-то из концов одного отрезка лежит на другом.
+- the endpoints of each one lie strictly on opposite sides of the other's line — the segments cross;
+- or else, if some endpoint of one segment lies on the other.
 
-#### Отрезок и треугольник
+#### Segment and triangle
 
-Решение зависит от того, где концы отрезка относительно плоскости треугольника:
+What to check depends on where the segment's endpoints are relative to the triangle's plane:
 
-| Концы отрезка | Что проверяется |
+| Endpoints | What is checked |
 |---|---|
-| строго по одну сторону | пересечения нет |
-| строго по разные стороны | отрезок пересекает плоскость в одной точке. Она внутри треугольника, если прямая отрезка проходит «внутри» относительно каждого из трёх рёбер, т.е. три вызова `orient3d` не дают разных ненулевых знаков |
-| один конец на плоскости | этот конец — единственная общая точка с плоскостью; проверяется, лежит ли он в треугольнике |
-| оба конца на плоскости | отрезок расположен полностью внутри треугольника или пересекает одно из его рёбер |
+| strictly on the same side | no intersection |
+| strictly on opposite sides | the segment crosses the plane at a single point. That point is inside the triangle if the segment's line passes "inside" relative to each of the three edges, i.e. the three `orient3d` calls give no two opposite non-zero signs |
+| one endpoint on the plane | that endpoint is the only point shared with the plane; check whether it lies in the triangle |
+| both endpoints on the plane | the segment lies entirely inside the triangle or crosses one of its edges |
 
-#### Треугольник и треугольник
+#### Triangle and triangle
 
-1. Для каждой вершины второго треугольника определяется, с какой стороны она от плоскости первого. Если все три строго по одну сторону, плоскость разделяет треугольники — пересечения нет. Так же проверяются вершины первого относительно плоскости второго.
-2. Иначе треугольники пересекаются тогда и только тогда, когда **какое-то ребро** одного треугольника пересекает другой треугольник. Каждое ребро проверяется как случай «отрезок и треугольник».
+1. For each vertex of the second triangle, determine which side of the first triangle's plane it is on. If all three are strictly on the same side, the plane separates the triangles and they do not intersect. The vertices of the first triangle are checked against the second triangle's plane the same way.
+2. Otherwise the triangles intersect if and only if **some edge** of one triangle intersects the other triangle. Each edge is checked as a segment-vs-triangle case.
 
-### Поиск пересекающихся треугольников
+### Finding all intersecting triangles
 
-Реализация: [`geometry/source/intersection_search.cpp`](geometry/source/intersection_search.cpp), [`geometry/source/uniform_grid.cpp`](geometry/source/uniform_grid.cpp).
+Implementation: [`geometry/source/intersection_search.cpp`](geometry/source/intersection_search.cpp), [`geometry/source/uniform_grid.cpp`](geometry/source/uniform_grid.cpp).
 
-Проверить все пары — это `N(N−1)/2` точных проверок: для `N = 100 000` около пяти миллиардов. Но пересекаться могут только треугольники, которые лежат рядом. Поэтому в проекте поиск идёт в два этапа: сначала дёшево отбираются близкие пары-кандидаты, и только для них выполняется точная проверка.
+Checking every pair means `N(N−1)/2` exact checks — about five billion for `N = 100,000`. But only triangles that are close to each other can intersect. So the search runs in two stages: first, nearby candidate pairs are selected cheaply, and only those go through the exact check.
 
-#### Ограничивающие параллелепипеды
+#### Bounding boxes
 
-Для каждого треугольника один раз строится наименьший содержащий его параллелепипед со сторонами вдоль осей. Если параллелепипеды двух треугольников не пересекаются, то не пересекаются и сами треугольники. Такая проверка — шесть сравнений чисел, она намного дешевле точной.
+Each triangle gets its smallest axis-aligned bounding box, computed once. If the boxes of two triangles do not overlap, neither do the triangles. The check is six number comparisons — far cheaper than the exact check.
 
-#### Равномерная сетка
+#### Uniform grid
 
-Пространство делится на одинаковые кубические ячейки. Каждый треугольник записывается во все ячейки, которые задевает его параллелепипед.
+Space is divided into equal cubic cells. Each triangle is registered in every cell its bounding box touches.
 
-Если два треугольника пересекаются,то их параллелепипеды тоже пересекаются, значит, у них есть общая ячейка. Поэтому достаточно сравнивать только треугольники из одной ячейки.
+If two triangles intersect, their boxes overlap too, so they share at least one cell. Therefore, it is enough to compare only triangles that share a cell.
 
-Размер ячейки подбирается по сцене:
+The cell size is chosen from the scene:
 
-- начальный размер — средний размер параллелепипеда, чтобы типичный треугольник занимал несколько ячеек;
-- по каждой оси сцена делится не больше чем на `2²¹ − 1` ячеек, чтобы три номера ячейки помещались в одно 64-битное число — ключ ячейки.
-- пока записей в ячейки больше, чем 16 на треугольник, размер ячейки удваивается. Иначе один огромный треугольник занял бы миллионы ячеек.
+- the initial size is the average bounding box size, so a typical triangle covers a few cells;
+- along each axis the scene is split into at most `2²¹ − 1` cells, so that the three cell indices fit into one 64-bit number — the cell key;
+- while there are more than 16 cell entries per triangle, the cell size is doubled. Otherwise a single huge triangle could take up millions of cells.
 
-#### Обход
+**Reference cell.** A pair may share several cells, but it must be checked exactly only once. So the pair is checked in just one of its shared cells — the one containing the minimum corner of the overlap of the two bounding boxes.
 
-**Опорная ячейка:** Пара может делить несколько ячеек, но точно проверять её нужно один раз. Поэтому пара проверяется только в одной из общих ячеек — в той, где лежит точка пересечения двух параллелепипедов с наименьшими координатами.
+#### Traversal
 
-1. Все записи «ячейка — треугольник» сортируются по ключу ячейки, и треугольники одной ячейки оказываются рядом.
-2. В каждой ячейке перебираются пары её треугольников. Проверки идут от дешёвых к дорогим:
-   - оба треугольника уже отмечены как пересекающиеся — пара пропускается, новой информации она не даст;
-   - параллелепипеды не пересекаются — пропускается;
-   - ячейка не опорная для этой пары — пропускается;
-   - иначе выполняется точная проверка.
-3. Когда отмечены все треугольники, поиск завершается досрочно.
+1. All "cell — triangle" entries are sorted by cell key, so the triangles of each cell end up next to each other.
+2. Within each cell, all pairs of its triangles are visited, with checks ordered from cheapest to most expensive:
+   - both triangles are already marked as intersecting — skip, the pair adds no new information;
+   - the bounding boxes do not overlap — skip;
+   - this is not the pair's reference cell — skip;
+   - otherwise run the exact check.
+3. Once every triangle is marked, the search stops early.
 
 > [!NOTE]
-> Когда треугольники мелкие и разбросаны по сцене, в каждой ячейке их немного, и время поиска растёт почти линейно с `N`. Худший случай остаётся квадратичным: много крупных треугольников, которые лежат рядом, но не пересекаются, попадают в одни и те же ячейки.
+> When triangles are small and spread across the scene, each cell holds only a few of them, and the search time grows almost linearly with `N`. The worst case is still quadratic: many large triangles that lie close together without intersecting end up in the same cells.
 
-## Визуализация
+## Visualizer
 
-Окно показывает всю сцену: обычные и пересекающиеся треугольники рисуются двумя разными цветами текущей темы. Камера свободно летает по сцене.
+The window shows the whole scene: regular and intersecting triangles are drawn in two different colors of the current theme. The camera flies freely through the scene.
 
-### Управление
+### Controls
 
-| Клавиша | Действие |
+| Key | Action |
 |---|---|
-| <kbd>W</kbd> / <kbd>S</kbd> | вперёд / назад по направлению взгляда |
-| <kbd>A</kbd> / <kbd>D</kbd> | влево / вправо |
-| <kbd>Space</kbd> / <kbd>Shift</kbd> | вверх / вниз |
-| <kbd>Ctrl</kbd> | ускорение ×2, пока зажат |
-| Колёсико мыши | скорость полёта: вверх — быстрее, вниз — медленнее |
-| Мышь | поворот взгляда |
-| <kbd>Alt</kbd> | показать курсор, пока зажат |
-| <kbd>←</kbd> / <kbd>→</kbd> | предыдущая / следующая цветовая тема |
-| <kbd>Esc</kbd> | закрыть окно |
+| <kbd>W</kbd> / <kbd>S</kbd> | move forward / backward along the view direction |
+| <kbd>A</kbd> / <kbd>D</kbd> | move left / right |
+| <kbd>Space</kbd> / <kbd>Shift</kbd> | move up / down |
+| <kbd>Ctrl</kbd> | ×2 speed while held |
+| Mouse wheel | flight speed: up is faster, down is slower |
+| Mouse | look around |
+| <kbd>Alt</kbd> | show the cursor while held |
+| <kbd>←</kbd> / <kbd>→</kbd> | previous / next color theme |
+| <kbd>Esc</kbd> | close the window |
 
-### Цветовые темы
+### Color themes
 
-Реализация: [`graphics/headers/theme.hpp`](graphics/headers/theme.hpp).
+Implementation: [`graphics/headers/theme.hpp`](graphics/headers/theme.hpp).
 
-Тема задаёт три цвета: фон, обычные треугольники и пересекающиеся. Начальная тема выбирается аргументом `--theme`, по умолчанию — `ocean`. В окне темы переключаются стрелками по кругу.
+A theme defines three colors: the background, regular triangles, and intersecting triangles. The starting theme is chosen with `--theme`, `ocean` by default. In the window, the arrow keys cycle through the themes.
 
-Скриншот темы открывается по клику на её имя:
+Click a theme name to see a screenshot:
 
-| Тема | Фон | Треугольники | Пересекающиеся |
+| Theme | Background | Triangles | Intersecting |
 |---|---|---|---|
 | [`ocean`](assets/ocean_theme.png) | `#0C2D48` | `#5AAAC8` | `#FF7F50` |
 | [`pine`](assets/pine_theme.png) | `#1E4637` | `#96C3A0` | `#FF6E5A` |
 | [`ultraviolet`](assets/ultraviolet_theme.png) | `#230A46` | `#BE6EFF` | `#5FEC5F` |
 | [`desert`](assets/desert_theme.png) | `#EEE2C8` | `#C8AA78` | `#285AC8` |
 
-### Как устроена отрисовка
+### How rendering works
 
-#### Подготовка сцены
+#### Scene preparation
 
-Реализация: [`scene/source/vertices.cpp`](scene/source/vertices.cpp).
+Implementation: [`scene/source/vertices.cpp`](scene/source/vertices.cpp).
 
-Видеокарта работает с `float`, а координаты на входе — `double` и могут быть любого масштаба: от `0.1` до `10⁶` и больше. Поэтому сцена сначала в `double` сдвигается в начало координат и масштабируется в куб `[-0.5, 0.5]`, и только потом переводится во `float`. Так мелкие детали далёкой от нуля сцены не теряются из-за точности `float`.
+The GPU works with `float`, while input coordinates are `double` and can be of any scale — from `0.1` to `10⁶` and beyond. So the scene is first centered at the origin and scaled into the cube `[-0.5, 0.5]` in `double`, and only then converted to `float`. This way small details of a scene far from the origin are not lost to `float` precision.
 
-#### Данные на видеокарте
+#### Data on the GPU
 
-Реализация: [`graphics/source/gpu_triangles.cpp`](graphics/source/gpu_triangles.cpp).
+Implementation: [`graphics/source/gpu_triangles.cpp`](graphics/source/gpu_triangles.cpp).
 
-Вершины загружаются на видеокарту один раз. Для каждой вершины хранятся только координаты и признак, пересекается ли треугольник. Цвета передаются шейдеру отдельно. Весь кадр рисуется одним вызовом.
+Vertices are uploaded to the GPU once. Each vertex stores only its coordinates and a flag telling whether its triangle intersects another. Colors are passed to the shader separately. The whole frame is drawn with a single call.
 
-#### Освещение
+#### Lighting
 
-Реализация: [`graphics/shaders/triangles_fragment.glsl`](graphics/shaders/triangles_fragment.glsl).
+Implementation: [`graphics/shaders/triangles_fragment.glsl`](graphics/shaders/triangles_fragment.glsl).
 
-Шейдер вычисляет нормаль в каждой точке по тому, как меняется её положение между соседними пикселями. Яркость зависит от угла между нормалью и направлением на камеру:
+The shader computes the normal at each point from how the point's position changes between neighboring pixels. Brightness depends on the angle between the normal and the direction to the camera:
 
 $$
-\text{яркость} = 0.65 + 0.35 \cdot |\cos \alpha|
+\text{brightness} = 0.65 + 0.35 \cdot |\cos \alpha|
 $$
 
-Модуль косинуса означает, что обе стороны треугольника освещаются одинаково.
+Taking the absolute value of the cosine lights both sides of a triangle the same way.
 
-#### Камера
+#### Camera
 
-Реализация: [`graphics/source/camera.cpp`](graphics/source/camera.cpp).
+Implementation: [`graphics/source/camera.cpp`](graphics/source/camera.cpp).
 
-Перспективная камера с углом обзора 60°. Камера стартует снаружи сцены и смотрит на её центр. Наклон взгляда ограничен ±89°, чтобы камера не переворачивалась через вертикаль.
+A perspective camera with a 60° field of view. It starts outside the scene, looking at its center. Pitch is limited to ±89° so the camera never flips over the vertical.
 
-#### Окно
+#### Window
 
-Реализация: [`graphics/source/window.cpp`](graphics/source/window.cpp).
+Implementation: [`graphics/source/window.cpp`](graphics/source/window.cpp).
 
-Окно и контекст OpenGL создаёт [GLFW](https://www.glfw.org/), функции OpenGL загружает [glad](https://github.com/Dav1dde/glad). Поддерживается перерисовка сцены во время растягивания окна. Тексты шейдеров при сборке вклеиваются в программу, поэтому исполняемый файл не зависит от папки, из которой его запустили.
+The window and OpenGL context are created by [GLFW](https://www.glfw.org/), and OpenGL functions are loaded by [glad](https://github.com/Dav1dde/glad). The scene keeps redrawing while the window is being resized. Shader sources are embedded into the program at build time, so the executable does not depend on the directory it is launched from.
 
-## Тестирование
+## Testing
 
-Все тесты запускаются через [CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html) после сборки.
+All tests run through [CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html) after building:
 
 ```bash
 ctest --test-dir build --output-on-failure
 ```
 
-### Модульные тесты
+### Unit tests
 
-Используют [GoogleTest](https://github.com/google/googletest). Метки — `geometry`, `scene`, `graphics`:
+Written with [GoogleTest](https://github.com/google/googletest). Labels: `geometry`, `scene`, `graphics`:
 
 ```bash
 ctest --test-dir build -L geometry
 ```
 
-### End-to-end тесты
+### End-to-end tests
 
-Реализация: [`e2e_tests/`](e2e_tests).
+Implementation: [`e2e_tests/`](e2e_tests).
 
-Python-скрипты проверяют собранные программы целиком. Скрипт сам строит ввод, запускает программу и сверяет код возврата, stdout и stderr.
+Python scripts test the built programs as a whole. A script builds the input itself, runs the program, and checks the exit code, stdout, and stderr.
 
-Каждая группа — отдельный тест CTest с меткой `e2e`:
+Each group is a separate CTest test labeled `e2e`:
 
-| Тест | Что проверяет |
+| Test | What it checks |
 |---|---|
-| `e2e_geometry` | пересечения обычных треугольников |
-| `e2e_degenerate` | точки и отрезки |
-| `e2e_scale` | те же сценарии после масштаба `2^±20`, `2^±300` и сдвига на `2^20` |
-| `e2e_search` | большие сцены с известным ответом |
-| `e2e_input` | формат и ошибки ввода |
-| `e2e_visualizer_arguments` | ошибки аргументов `triangles.out` |
-| `e2e_generator` | генератор сцен |
+| `e2e_geometry` | intersections of regular triangles |
+| `e2e_degenerate` | points and segments |
+| `e2e_scale` | the same scenarios scaled by `2^±20`, `2^±300` and shifted by `2^20` |
+| `e2e_search` | large scenes with a known answer |
+| `e2e_input` | input format and input errors |
+| `e2e_visualizer_arguments` | invalid arguments to `triangles.out` |
+| `e2e_generator` | the scene generator |
 
-Все e2e-тесты:
+All e2e tests:
 
 ```bash
 ctest --test-dir build -L e2e
 ```
 
-Одна группа:
+A single group:
 
 ```bash
 ctest --test-dir build -R e2e_scale --output-on-failure
 ```
 
-## Структура проекта
+## Project layout
 
 ```text
 .
-├── CMakeLists.txt                      # корневая сборка, GoogleTest
-├── main.cpp                            # визуализация
+├── CMakeLists.txt                      # root build, GoogleTest
+├── main.cpp                            # visualizer
 ├── cmake/
-│   └── warnings.cmake                  # общие флаги предупреждений
+│   └── warnings.cmake                  # shared warning flags
 ├── geometry/
 │   ├── CMakeLists.txt
 │   ├── headers/
-│   │   ├── vector2.hpp                 # вектор на плоскости
-│   │   ├── vector3.hpp                 # вектор и точка в пространстве
-│   │   ├── triangle.hpp                # треугольник
-│   │   ├── bounding_box.hpp            # ограничивающий параллелепипед
-│   │   ├── robust_predicates.hpp       # точные предикаты orient2d, orient3d
-│   │   ├── intersection.hpp            # пересечение двух треугольников
-│   │   ├── uniform_grid.hpp            # равномерная сетка для отбора кандидатов
-│   │   ├── intersection_search.hpp     # поиск всех пересекающихся треугольников
-│   │   └── input_reader.hpp            # чтение ввода
+│   │   ├── vector2.hpp                 # 2D vector
+│   │   ├── vector3.hpp                 # 3D vector and point
+│   │   ├── triangle.hpp                # triangle
+│   │   ├── bounding_box.hpp            # axis-aligned bounding box
+│   │   ├── robust_predicates.hpp       # exact orient2d, orient3d predicates
+│   │   ├── intersection.hpp            # intersection of two triangles
+│   │   ├── uniform_grid.hpp            # uniform grid for candidate selection
+│   │   ├── intersection_search.hpp     # search for all intersecting triangles
+│   │   └── input_reader.hpp            # input parsing
 │   ├── source/
 │   │   ├── triangle.cpp
 │   │   ├── bounding_box.cpp
@@ -466,11 +466,11 @@ ctest --test-dir build -R e2e_scale --output-on-failure
 │       └── input_reader_tests.cpp
 ├── cli/
 │   ├── CMakeLists.txt
-│   └── main.cpp                        # консольная версия
+│   └── main.cpp                        # command-line version
 ├── scene/
 │   ├── CMakeLists.txt
 │   ├── headers/
-│   │   └── vertices.hpp                # подготовка вершин сцены для отрисовки
+│   │   └── vertices.hpp                # preparing scene vertices for rendering
 │   ├── source/
 │   │   └── vertices.cpp
 │   └── tests/
@@ -479,13 +479,13 @@ ctest --test-dir build -R e2e_scale --output-on-failure
 ├── graphics/
 │   ├── CMakeLists.txt                  # GLFW, glad, GLM
 │   ├── headers/
-│   │   ├── window.hpp                  # окно и ввод
-│   │   ├── shader_program.hpp          # шейдерная программа
-│   │   ├── shaders.hpp                 # исходники шейдеров
-│   │   ├── vertex.hpp                  # вершина: координаты и признак пересечения
-│   │   ├── gpu_triangles.hpp           # буферы вершин на видеокарте
-│   │   ├── camera.hpp                  # камера
-│   │   └── theme.hpp                   # цветовые темы
+│   │   ├── window.hpp                  # window, keyboard and mouse input
+│   │   ├── shader_program.hpp          # shader program
+│   │   ├── shaders.hpp                 # shader sources
+│   │   ├── vertex.hpp                  # vertex: coordinates and intersection flag
+│   │   ├── gpu_triangles.hpp           # vertex buffers on the GPU
+│   │   ├── camera.hpp                  # camera
+│   │   └── theme.hpp                   # color themes
 │   ├── source/
 │   │   ├── window.cpp
 │   │   ├── shader_program.cpp
@@ -494,23 +494,23 @@ ctest --test-dir build -R e2e_scale --output-on-failure
 │   │   ├── camera.cpp
 │   │   └── theme.cpp
 │   ├── shaders/
-│   │   ├── triangles_vertex.glsl       # вершинный шейдер
-│   │   ├── triangles_fragment.glsl     # фрагментный шейдер
-│   │   └── shader_sources.hpp.in       # шаблон заголовка с текстом шейдеров
+│   │   ├── triangles_vertex.glsl       # vertex shader
+│   │   ├── triangles_fragment.glsl     # fragment shader
+│   │   └── shader_sources.hpp.in       # template for the header with shader sources
 │   └── tests/
 │       ├── CMakeLists.txt
 │       ├── camera_tests.cpp
 │       └── theme_tests.cpp
 ├── e2e_tests/
-│   ├── CMakeLists.txt                  # регистрация e2e в CTest
-│   ├── common.py                       # заготовки, кодирование ввода, запуск и сверка
-│   ├── cli_e2e.py                      # сценарии для triangles_cli
-│   ├── visualizer_e2e.py               # ошибки аргументов triangles.out
-│   └── generator_e2e.py                # проверки generate_scene.py
+│   ├── CMakeLists.txt                  # registers e2e tests with CTest
+│   ├── common.py                       # building blocks, input encoding, running and checking
+│   ├── cli_e2e.py                      # scenarios for triangles_cli
+│   ├── visualizer_e2e.py               # invalid arguments to triangles.out
+│   └── generator_e2e.py                # checks for generate_scene.py
 ├── tools/
-│   └── generate_scene.py               # генератор случайных сцен
-├── assets/                             # скриншоты для README
-└── examples/                           # сцены для запуска
+│   └── generate_scene.py               # random scene generator
+├── assets/                             # screenshots for the README
+└── examples/                           # scene examples
     ├── cloud_5k.in
     ├── mixed_sizes_10k.in
     ├── tiny_cloud_20k.in
