@@ -66,6 +66,7 @@ private:
     std::function<void()> redraw_;
     bool cursor_captured_ = false;
     glm::dvec2 last_cursor_position_;
+    bool was_focused_ = true;
     double scroll_offset_ = 0.0;
 };
 

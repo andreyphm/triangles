@@ -167,7 +167,11 @@ void Window::set_cursor_captured(bool captured) {
 
 glm::vec2 Window::take_cursor_movement() {
     const glm::dvec2 position = cursor_position(handle_);
-    const glm::dvec2 movement = position - last_cursor_position_;
+    const bool focused = glfwGetWindowAttrib(handle_, GLFW_FOCUSED) == GLFW_TRUE;
+    const bool tracking = focused && was_focused_;
+    was_focused_ = focused;
+
+    const glm::dvec2 movement = tracking ? position - last_cursor_position_ : glm::dvec2{0.0};
     last_cursor_position_ = position;
     return glm::vec2(movement);
 }
