@@ -41,7 +41,7 @@ public:
     bool should_close() const;
     void request_close();
     float aspect_ratio() const;
-    void clear();
+    void clear(const glm::vec3& background);
     void swap_buffers();
     void poll_events();
     void set_redraw_callback(std::function<void()> redraw);

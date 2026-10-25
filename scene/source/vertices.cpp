@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <stdexcept>
 #include <vector>
 
@@ -73,10 +74,10 @@ std::vector<graphics::Vertex> make_vertices(const std::vector<geometry::Triangle
     vertices.reserve(triangles.size() * vertices_per_triangle);
 
     for (std::size_t triangle = 0; triangle < triangles.size(); ++triangle) {
-        const graphics::Color color = intersection_flags[triangle] ? intersecting_color : regular_color;
+        const std::uint8_t intersecting = intersection_flags[triangle];
         for (std::size_t index = 0; index < vertices_per_triangle; ++index) {
             const glm::vec3 position = to_scene_position(triangles[triangle].vertex(index), center, largest_half_size);
-            vertices.push_back({position, color});
+            vertices.push_back({position, intersecting});
         }
     }
 

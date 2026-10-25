@@ -6,15 +6,9 @@
 
 namespace graphics {
 
-struct Color {
-    std::uint8_t red;
-    std::uint8_t green;
-    std::uint8_t blue;
-};
-
 struct Vertex {
     glm::vec3 position;
-    Color color;
+    std::uint8_t intersecting;
 };
 
 } // namespace graphics

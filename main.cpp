@@ -21,6 +21,9 @@
 namespace {
 
 constexpr glm::vec3 start_camera_position{0.0f, 0.0f, 1.5f};
+constexpr glm::vec3 background_color{12.0f / 255.0f, 45.0f / 255.0f, 72.0f / 255.0f};
+constexpr glm::vec3 regular_color{90.0f / 255.0f, 170.0f / 255.0f, 200.0f / 255.0f};
+constexpr glm::vec3 intersecting_color{255.0f / 255.0f, 127.0f / 255.0f, 80.0f / 255.0f};
 constexpr float initial_movement_speed = 0.5f;
 constexpr float min_movement_speed = initial_movement_speed / 64.0f;
 constexpr float max_movement_speed = initial_movement_speed * 8.0f;
@@ -103,9 +106,10 @@ int main() {
         graphics::Camera camera{start_camera_position, 0.0f, 0.0f};
 
         shader_program.use();
+        graphics::set_triangles_colors(shader_program, regular_color, intersecting_color);
 
         const auto draw_frame = [&window, &shader_program, &gpu_triangles, &camera] {
-            window.clear();
+            window.clear(background_color);
             graphics::set_triangles_camera(shader_program, camera.view_matrix(), camera.projection_matrix(window.aspect_ratio()));
             gpu_triangles.draw();
             window.swap_buffers();

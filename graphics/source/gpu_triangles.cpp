@@ -10,9 +10,9 @@ namespace graphics {
 namespace {
 
 constexpr GLuint position_location = 0;
-constexpr GLuint color_location = 1;
+constexpr GLuint intersecting_location = 1;
 constexpr GLint coordinates_per_vertex = 3;
-constexpr GLint components_per_color = 3;
+constexpr GLint components_per_flag = 1;
 
 GLuint create_vertex_buffer(std::span<const Vertex> vertices) {
     GLuint buffer = 0;
@@ -33,9 +33,9 @@ GLuint create_vertex_array(GLuint vertex_buffer) {
                           reinterpret_cast<const void*>(offsetof(Vertex, position)));
     glEnableVertexAttribArray(position_location);
 
-    glVertexAttribPointer(color_location, components_per_color, GL_UNSIGNED_BYTE, GL_TRUE, stride,
-                          reinterpret_cast<const void*>(offsetof(Vertex, color)));
-    glEnableVertexAttribArray(color_location);
+    glVertexAttribPointer(intersecting_location, components_per_flag, GL_UNSIGNED_BYTE, GL_FALSE, stride,
+                          reinterpret_cast<const void*>(offsetof(Vertex, intersecting)));
+    glEnableVertexAttribArray(intersecting_location);
 
     glBindVertexArray(0);
     return vertex_array;

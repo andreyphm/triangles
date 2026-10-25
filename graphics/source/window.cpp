@@ -20,9 +20,6 @@ constexpr int opengl_major_version = 3;
 constexpr int opengl_minor_version = 3;
 constexpr int screen_refreshes_per_frame = 1;
 
-constexpr GLfloat background_red = 0.1f;
-constexpr GLfloat background_green = 0.1f;
-constexpr GLfloat background_blue = 0.12f;
 constexpr GLfloat background_alpha = 1.0f;
 
 GLFWwindow* create_window(int width, int height, const char* title) {
@@ -112,13 +109,13 @@ float Window::aspect_ratio() const {
     return static_cast<float>(width) / static_cast<float>(height);
 }
 
-void Window::clear() {
+void Window::clear(const glm::vec3& background) {
     int width = 0;
     int height = 0;
     glfwGetFramebufferSize(handle_, &width, &height);
     glViewport(0, 0, width, height);
 
-    glClearColor(background_red, background_green, background_blue, background_alpha);
+    glClearColor(background.r, background.g, background.b, background_alpha);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

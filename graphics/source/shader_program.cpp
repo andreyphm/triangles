@@ -110,13 +110,23 @@ void ShaderProgram::use() const {
 }
 
 void ShaderProgram::set_uniform(const char* name, const glm::mat4& value) const {
+    const GLint location = uniform_location(name);
+    glUseProgram(handle_);
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+}
+
+void ShaderProgram::set_uniform(const char* name, const glm::vec3& value) const {
+    const GLint location = uniform_location(name);
+    glUseProgram(handle_);
+    glUniform3fv(location, 1, glm::value_ptr(value));
+}
+
+int ShaderProgram::uniform_location(const char* name) const {
     const GLint location = glGetUniformLocation(handle_, name);
     if (location == -1) {
         throw std::runtime_error(std::string{"unknown shader uniform "} + name);
     }
-
-    glUseProgram(handle_);
-    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+    return location;
 }
 
 } // namespace graphics

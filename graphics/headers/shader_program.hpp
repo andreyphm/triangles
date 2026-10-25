@@ -16,8 +16,11 @@ public:
 
     void use() const;
     void set_uniform(const char* name, const glm::mat4& value) const;
+    void set_uniform(const char* name, const glm::vec3& value) const;
 
 private:
+    int uniform_location(const char* name) const;
+
     unsigned int handle_;
 };
 
