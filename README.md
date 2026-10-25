@@ -291,14 +291,14 @@ $$
 
 Тема задаёт три цвета: фон, обычные треугольники и пересекающиеся. Начальная тема выбирается аргументом `--theme`, по умолчанию — `ocean`. В окне темы переключаются стрелками по кругу.
 
-<!-- Здесь будут скриншоты тем -->
+Скриншот темы открывается по клику на её имя:
 
 | Тема | Фон | Треугольники | Пересекающиеся |
 |---|---|---|---|
-| `ocean` | `#0C2D48` | `#5AAAC8` | `#FF7F50` |
-| `pine` | `#1E4637` | `#96C3A0` | `#FF6E5A` |
-| `ultraviolet` | `#230A46` | `#BE6EFF` | `#78FF78` |
-| `desert` | `#EEE2C8` | `#C8AA78` | `#285AC8` |
+| [`ocean`](assets/ocean_theme.png) | `#0C2D48` | `#5AAAC8` | `#FF7F50` |
+| [`pine`](assets/pine_theme.png) | `#1E4637` | `#96C3A0` | `#FF6E5A` |
+| [`ultraviolet`](assets/ultraviolet_theme.png) | `#230A46` | `#BE6EFF` | `#5FEC5F` |
+| [`desert`](assets/desert_theme.png) | `#EEE2C8` | `#C8AA78` | `#285AC8` |
 
 ### Как устроена отрисовка
 
@@ -432,6 +432,7 @@ ctest --test-dir output -L geometry
 │       └── camera_tests.cpp
 ├── tools/
 │   └── generate_scene.py               # генератор случайных сцен
+├── assets/                             # скриншоты для README
 └── examples/                           # сцены для запуска
     ├── cloud_5k.in
     ├── mixed_sizes_10k.in
