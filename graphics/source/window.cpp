@@ -63,6 +63,8 @@ int glfw_key(Key key) {
         case Key::left_control: return GLFW_KEY_LEFT_CONTROL;
         case Key::left_alt:     return GLFW_KEY_LEFT_ALT;
         case Key::escape:       return GLFW_KEY_ESCAPE;
+        case Key::left:         return GLFW_KEY_LEFT;
+        case Key::right:        return GLFW_KEY_RIGHT;
     }
 
     throw std::logic_error("invalid key");

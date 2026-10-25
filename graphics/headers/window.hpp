@@ -18,7 +18,9 @@ enum class Key {
     left_shift,
     left_control,
     left_alt,
-    escape
+    escape,
+    left,
+    right
 };
 
 class GlfwLibrary {

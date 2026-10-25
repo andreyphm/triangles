@@ -3,6 +3,7 @@
 #include "input_reader.hpp"
 #include "intersection_search.hpp"
 #include "shaders.hpp"
+#include "theme.hpp"
 #include "triangle.hpp"
 #include "vertices.hpp"
 #include "window.hpp"
@@ -13,17 +14,17 @@
 #include <array>
 #include <chrono>
 #include <cmath>
+#include <cstddef>
 #include <cstdlib>
 #include <exception>
 #include <iostream>
+#include <optional>
+#include <string_view>
 #include <vector>
 
 namespace {
 
 constexpr glm::vec3 start_camera_position{0.0f, 0.0f, 1.5f};
-constexpr glm::vec3 background_color{12.0f / 255.0f, 45.0f / 255.0f, 72.0f / 255.0f};
-constexpr glm::vec3 regular_color{90.0f / 255.0f, 170.0f / 255.0f, 200.0f / 255.0f};
-constexpr glm::vec3 intersecting_color{255.0f / 255.0f, 127.0f / 255.0f, 80.0f / 255.0f};
 constexpr float initial_movement_speed = 0.5f;
 constexpr float min_movement_speed = initial_movement_speed / 64.0f;
 constexpr float max_movement_speed = initial_movement_speed * 8.0f;
@@ -82,10 +83,63 @@ void control_camera(graphics::Window& window, graphics::Camera& camera, float& m
     }
 }
 
+std::optional<std::size_t> parse_theme(int argc, char* argv[]) {
+    if (argc == 1) {
+        return 0;
+    }
+    if (argc == 3 && std::string_view{argv[1]} == "--theme") {
+        return graphics::find_theme(argv[2]);
+    }
+    return std::nullopt;
+}
+
+void print_usage(std::string_view program) {
+    std::cerr << "usage: " << program << " [--theme NAME] < input\nthemes:";
+    for (const graphics::Theme& theme : graphics::themes) {
+        std::cerr << ' ' << theme.name;
+    }
+    std::cerr << '\n';
+}
+
+bool key_just_pressed(const graphics::Window& window, graphics::Key key, bool& was_pressed) {
+    const bool pressed = window.is_key_pressed(key);
+    const bool just_pressed = pressed && !was_pressed;
+    was_pressed = pressed;
+    return just_pressed;
+}
+
+struct ThemeSwitcher {
+    std::size_t index;
+    bool previous_was_pressed = false;
+    bool next_was_pressed = false;
+};
+
+bool switch_theme(const graphics::Window& window, ThemeSwitcher& switcher) {
+    if (key_just_pressed(window, graphics::Key::right, switcher.next_was_pressed)) {
+        switcher.index = graphics::next_theme(switcher.index);
+        return true;
+    }
+    if (key_just_pressed(window, graphics::Key::left, switcher.previous_was_pressed)) {
+        switcher.index = graphics::previous_theme(switcher.index);
+        return true;
+    }
+    return false;
+}
+
+void apply_theme_colors(const graphics::ShaderProgram& shader_program, const graphics::Theme& theme) {
+    graphics::set_triangles_colors(shader_program, theme.regular, theme.intersecting);
+}
+
 } // namespace
 
-int main() {
+int main(int argc, char* argv[]) {
     std::ios::sync_with_stdio(false);
+
+    const std::optional<std::size_t> initial_theme = parse_theme(argc, argv);
+    if (!initial_theme) {
+        print_usage(argc > 0 ? argv[0] : "triangles.out");
+        return EXIT_FAILURE;
+    }
 
     std::vector<geometry::Triangle> triangles;
     const geometry::TriangleReadResult read_result = geometry::read_triangles(std::cin, triangles);
@@ -105,11 +159,12 @@ int main() {
 
         graphics::Camera camera{start_camera_position, 0.0f, 0.0f};
 
+        ThemeSwitcher theme_switcher{*initial_theme};
         shader_program.use();
-        graphics::set_triangles_colors(shader_program, regular_color, intersecting_color);
+        apply_theme_colors(shader_program, graphics::themes[theme_switcher.index]);
 
-        const auto draw_frame = [&window, &shader_program, &gpu_triangles, &camera] {
-            window.clear(background_color);
+        const auto draw_frame = [&window, &shader_program, &gpu_triangles, &camera, &theme_switcher] {
+            window.clear(graphics::themes[theme_switcher.index].background);
             graphics::set_triangles_camera(shader_program, camera.view_matrix(), camera.projection_matrix(window.aspect_ratio()));
             gpu_triangles.draw();
             window.swap_buffers();
@@ -126,6 +181,9 @@ int main() {
             previous_frame_time = frame_time;
 
             control_camera(window, camera, movement_speed, std::min(frame_seconds, max_frame_seconds));
+            if (switch_theme(window, theme_switcher)) {
+                apply_theme_colors(shader_program, graphics::themes[theme_switcher.index]);
+            }
             draw_frame();
         }
     } catch (const std::exception& error) {

@@ -48,6 +48,7 @@ add_library(triangles_graphics STATIC
     source/gpu_triangles.cpp
     source/shader_program.cpp
     source/shaders.cpp
+    source/theme.cpp
     source/window.cpp)
 target_include_directories(triangles_graphics
     PUBLIC headers
