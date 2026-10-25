@@ -30,3 +30,7 @@ add_subdirectory(cli)
 add_executable(triangles.out main.cpp)
 target_link_libraries(triangles.out PRIVATE triangles_geometry triangles_graphics triangles_scene)
 triangles_enable_warnings(triangles.out)
+
+if(BUILD_TESTING)
+    add_subdirectory(e2e_tests)
+endif()
