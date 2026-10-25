@@ -60,6 +60,32 @@ TEST(InputReader, reads_single_triangle_independently_of_line_breaks) {
     EXPECT_EQ(triangles[0].vertex(2), Vector3(0.0, 1.0, 0.0));
 }
 
+TEST(InputReader, reads_windows_line_endings_and_tabs) {
+    std::istringstream input{
+        "2\r\n"
+        "0\t0\t0  1 0 0\r\n"
+        "0 1 0\r\n"
+        "1 1 1\t2 2 2\t3 3 4\r\n"};
+    std::vector<Triangle> triangles;
+
+    const TriangleReadResult result = read_triangles(input, triangles);
+
+    EXPECT_TRUE(result.is_success());
+    ASSERT_EQ(triangles.size(), 2);
+    EXPECT_EQ(triangles[0].vertex(2), Vector3(0.0, 1.0, 0.0));
+    EXPECT_EQ(triangles[1].vertex(2), Vector3(3.0, 3.0, 4.0));
+}
+
+TEST(InputReader, ignores_data_after_last_triangle) {
+    std::istringstream input{"1\n0 0 0  1 0 0  0 1 0\nnot part of the input 42\n"};
+    std::vector<Triangle> triangles;
+
+    const TriangleReadResult result = read_triangles(input, triangles);
+
+    EXPECT_TRUE(result.is_success());
+    EXPECT_EQ(triangles.size(), 1);
+}
+
 TEST(InputReader, replaces_existing_output_after_success) {
     std::istringstream input{"1\n0 0 0  1 0 0  0 1 0\n"};
     std::vector<Triangle> triangles{sample_triangle()};
@@ -93,6 +119,15 @@ TEST(InputReader, rejects_triangle_count_followed_by_non_space) {
         EXPECT_EQ(result.triangle_number(), std::nullopt);
         EXPECT_TRUE(triangles.empty());
     }
+}
+
+TEST(InputReader, rejects_triangle_count_in_exponent_notation) {
+    std::istringstream input{"1e0\n0 0 0  1 0 0  0 1 0\n"};
+    std::vector<Triangle> triangles;
+
+    const TriangleReadResult result = read_triangles(input, triangles);
+
+    EXPECT_EQ(result.status(), TriangleReadStatus::count_read_failed);
 }
 
 TEST(InputReader, rejects_triangle_count_out_of_range) {
