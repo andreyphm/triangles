@@ -570,3 +570,16 @@ TEST(Intersection, detects_nearly_parallel_segments_crossing_with_large_coordina
 
     expect_symmetric_intersection(first, second, true);
 }
+
+TEST(Intersection, rejects_triangle_crossing_plane_of_other_beside_it) {
+    const Triangle flat{
+        Vector3(0.0, 0.0, 0.0),
+        Vector3(1.0, 0.0, 0.0),
+        Vector3(0.0, 1.0, 0.0)};
+    const Triangle crossing_plane_beside{
+        Vector3(5.0, 0.0, -1.0),
+        Vector3(5.0, 1.0, 1.0),
+        Vector3(5.0, 0.0, 1.0)};
+
+    expect_symmetric_intersection(flat, crossing_plane_beside, false);
+}
