@@ -50,18 +50,21 @@ public:
     bool cursor_captured() const { return cursor_captured_; }
     void set_cursor_captured(bool captured);
     glm::vec2 take_cursor_movement();
+    double take_scroll();
 
     std::string opengl_version() const;
 
 private:
     static void handle_refresh(GLFWwindow* handle);
     static void handle_framebuffer_resize(GLFWwindow* handle, int width, int height);
+    static void handle_scroll(GLFWwindow* handle, double x_offset, double y_offset);
 
     GlfwLibrary library_;
     GLFWwindow* handle_;
     std::function<void()> redraw_;
     bool cursor_captured_ = false;
     glm::dvec2 last_cursor_position_;
+    double scroll_offset_ = 0.0;
 };
 
 } // namespace graphics

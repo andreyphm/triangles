@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cmath>
 #include <cstdlib>
 #include <exception>
 #include <iostream>
@@ -20,7 +21,10 @@
 namespace {
 
 constexpr glm::vec3 start_camera_position{0.0f, 0.0f, 1.5f};
-constexpr float movement_speed = 0.5f;
+constexpr float initial_movement_speed = 0.5f;
+constexpr float min_movement_speed = initial_movement_speed / 64.0f;
+constexpr float max_movement_speed = initial_movement_speed * 8.0f;
+constexpr float scroll_speed_factor = 1.25f;
 constexpr float sprint_multiplier = 2.0f;
 constexpr float mouse_sensitivity = 0.002f;
 constexpr float max_frame_seconds = 0.1f;
@@ -49,7 +53,12 @@ glm::vec3 movement_direction(const graphics::Window& window) {
     return direction;
 }
 
-void control_camera(graphics::Window& window, graphics::Camera& camera, float frame_seconds) {
+float scrolled_movement_speed(graphics::Window& window, float movement_speed) {
+    const float factor = std::pow(scroll_speed_factor, static_cast<float>(window.take_scroll()));
+    return std::clamp(movement_speed * factor, min_movement_speed, max_movement_speed);
+}
+
+void control_camera(graphics::Window& window, graphics::Camera& camera, float& movement_speed, float frame_seconds) {
     if (window.is_key_pressed(graphics::Key::escape)) {
         window.request_close();
         return;
@@ -61,10 +70,11 @@ void control_camera(graphics::Window& window, graphics::Camera& camera, float fr
         camera.rotate(cursor_movement.x * mouse_sensitivity, -cursor_movement.y * mouse_sensitivity);
     }
 
+    movement_speed = scrolled_movement_speed(window, movement_speed);
+
     const glm::vec3 direction = movement_direction(window);
     if (direction != glm::vec3(0.0f)) {
-        const float speed =
-            window.is_key_pressed(graphics::Key::left_control) ? movement_speed * sprint_multiplier : movement_speed;
+        const float speed = window.is_key_pressed(graphics::Key::left_control) ? movement_speed * sprint_multiplier : movement_speed;
         camera.move(glm::normalize(direction) * speed * frame_seconds);
     }
 }
@@ -102,6 +112,7 @@ int main() {
         };
         window.set_redraw_callback(draw_frame);
 
+        float movement_speed = initial_movement_speed;
         auto previous_frame_time = std::chrono::steady_clock::now();
         while (!window.should_close()) {
             window.poll_events();
@@ -110,7 +121,7 @@ int main() {
             const float frame_seconds = std::chrono::duration<float>(frame_time - previous_frame_time).count();
             previous_frame_time = frame_time;
 
-            control_camera(window, camera, std::min(frame_seconds, max_frame_seconds));
+            control_camera(window, camera, movement_speed, std::min(frame_seconds, max_frame_seconds));
             draw_frame();
         }
     } catch (const std::exception& error) {

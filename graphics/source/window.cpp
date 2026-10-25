@@ -84,7 +84,10 @@ GlfwLibrary::~GlfwLibrary() {
 }
 
 Window::Window(int width, int height, const char* title)
-    : handle_(create_window(width, height, title)), last_cursor_position_(cursor_position(handle_)) {}
+    : handle_(create_window(width, height, title)), last_cursor_position_(cursor_position(handle_)) {
+    glfwSetWindowUserPointer(handle_, this);
+    glfwSetScrollCallback(handle_, handle_scroll);
+}
 
 Window::~Window() {
     glfwDestroyWindow(handle_);
@@ -129,7 +132,6 @@ void Window::poll_events() {
 
 void Window::set_redraw_callback(std::function<void()> redraw) {
     redraw_ = std::move(redraw);
-    glfwSetWindowUserPointer(handle_, this);
     glfwSetWindowRefreshCallback(handle_, handle_refresh);
     glfwSetFramebufferSizeCallback(handle_, handle_framebuffer_resize);
 }
@@ -143,6 +145,11 @@ void Window::handle_refresh(GLFWwindow* handle) {
 
 void Window::handle_framebuffer_resize(GLFWwindow* handle, int, int) {
     handle_refresh(handle);
+}
+
+void Window::handle_scroll(GLFWwindow* handle, double, double y_offset) {
+    Window* const window = static_cast<Window*>(glfwGetWindowUserPointer(handle));
+    window->scroll_offset_ += y_offset;
 }
 
 bool Window::is_key_pressed(Key key) const {
@@ -164,6 +171,12 @@ glm::vec2 Window::take_cursor_movement() {
     const glm::dvec2 movement = position - last_cursor_position_;
     last_cursor_position_ = position;
     return glm::vec2(movement);
+}
+
+double Window::take_scroll() {
+    const double offset = scroll_offset_;
+    scroll_offset_ = 0.0;
+    return offset;
 }
 
 std::string Window::opengl_version() const {
