@@ -246,3 +246,26 @@ TEST(IntersectionSearch, marks_all_copies_of_same_point) {
 
     EXPECT_EQ(result, IntersectionFlags(triangles.size(), true));
 }
+
+TEST(IntersectionSearch, leaves_triangles_with_touching_bounds_but_no_contact_unmarked) {
+    const std::vector<Triangle> triangles{
+        Triangle{Vector3{0.0, 0.0, 0.0}, Vector3{2.0, 0.0, 0.0}, Vector3{0.0, 2.0, 0.0}},
+        Triangle{Vector3{2.0, 2.0, 0.0}, Vector3{3.0, 2.0, 0.0}, Vector3{2.0, 3.0, 0.0}}};
+
+    const IntersectionFlags result = find_intersecting_triangles(triangles);
+
+    EXPECT_EQ(result, IntersectionFlags({false, false}));
+}
+
+TEST(IntersectionSearch, leaves_large_parallel_triangles_sharing_many_cells_unmarked) {
+    std::vector<Triangle> triangles{
+        Triangle{Vector3{0.0, 0.0, 0.0}, Vector3{10.0, 0.0, 0.0}, Vector3{0.0, 10.0, 10.0}},
+        Triangle{Vector3{0.0, 0.0, 0.5}, Vector3{10.0, 0.0, 0.5}, Vector3{0.0, 10.0, 10.5}}};
+    for (int index = 0; index < 500; ++index) {
+        triangles.push_back(point_triangle(100.0 + index, 0.0, 0.0));
+    }
+
+    const IntersectionFlags result = find_intersecting_triangles(triangles);
+
+    EXPECT_EQ(result, IntersectionFlags(triangles.size(), false));
+}
