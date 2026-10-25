@@ -1,3 +1,6 @@
 output
 build
+build-windows
+build-linux
 .vscode
+__pycache__/
