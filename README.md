@@ -41,17 +41,27 @@
 ## Быстрый старт
 
 > [!NOTE]
-> Проект сделан под Windows в среде [MSYS2](https://www.msys2.org/) UCRT64.
+> Сборка и тесты проверены под Windows ([MSYS2](https://www.msys2.org/) UCRT64) и Linux (Ubuntu 24.04).
 
 Требования:
 
 | Что | Версия | Зачем |
 |---|---|---|
-| Компилятор GCC | с поддержкой C++20 | сборка |
+| Компилятор GCC | с поддержкой C++20, проверено на GCC 13 | сборка |
 | [CMake](https://cmake.org/) | 3.16+ | сборка, загрузка зависимостей |
 | [Ninja](https://ninja-build.org/) | любая | генератор сборки |
-| Python 3 + Jinja2 | любая | генерация загрузчика OpenGL ([glad](https://github.com/Dav1dde/glad)) |
+| Python | 3.10+ | e2e-тесты и генератор сцен |
+| Jinja2 | любая | генерация загрузчика OpenGL ([glad](https://github.com/Dav1dde/glad)) |
 | Видеокарта | OpenGL 3.3 core | окно визуализации |
+
+Библиотеки (GLFW, glad, GLM, GoogleTest) подключаются автоматически при первой конфигурации.
+
+```bash
+git clone https://github.com/andreyphm/triangles.git
+cd triangles
+```
+
+### Windows (MSYS2 UCRT64)
 
 Установка инструментов в терминале MSYS2 UCRT64:
 
@@ -59,33 +69,63 @@
 pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-python-jinja2
 ```
 
-Библиотеки (GLFW, glad, GLM, GoogleTest) подтягиваются автоматически при первой конфигурации.
+Сборка:
+
+```bash
+cmake -S . -B build
+cmake --build build
+```
+
+### Linux (Ubuntu 24.04)
+
+Установка инструментов, пакеты X11 и Wayland нужны для сборки GLFW:
+
+```bash
+sudo apt install -y build-essential cmake ninja-build git pkg-config python3 python3-jinja2 libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev libwayland-dev libwayland-bin wayland-protocols libgl1-mesa-dev
+```
 
 Сборка:
 
 ```bash
-git clone https://github.com/andreyphm/triangles.git
-cd triangles
-cmake -S . -B output
-cmake --build output
+cmake -S . -B build
+cmake --build build
 ```
 
 ## Использование
 
+### Windows
+
 Консольная версия:
 
 ```powershell
-cmd /c ".\output\cli\triangles_cli.exe < examples\cloud_5k.in"
+cmd /c ".\build\cli\triangles_cli.exe < examples\cloud_5k.in"
 ```
 
 Визуализация (можно выбрать [цветовую тему](#цветовые-темы)):
 
 ```powershell
-cmd /c ".\output\triangles.out.exe [--theme ...] < examples\cloud_5k.in"
+cmd /c ".\build\triangles.out.exe [--theme ...] < examples\cloud_5k.in"
 ```
 
 > [!TIP]
-> В PowerShell нет перенаправления ввода `<`, а конвейер `Get-Content файл | программа` портит ввод. Поэтому запуск идёт через `cmd /c`. В терминале MSYS2 можно писать как обычно: `./output/triangles.out < examples/cloud_5k.in`.
+> В PowerShell нет перенаправления ввода `<`, а конвейер `Get-Content файл | программа` портит ввод. Поэтому запуск идёт через `cmd /c`. В терминале MSYS2 можно писать как обычно: `./build/triangles.out < examples/cloud_5k.in`.
+
+### Linux
+
+Консольная версия:
+
+```bash
+./build/cli/triangles_cli < examples/cloud_5k.in
+```
+
+Визуализация:
+
+```bash
+./build/triangles.out [--theme ...] < examples/cloud_5k.in
+```
+
+> [!NOTE]
+> В WSL окно работает через WSLg: мышь поворачивает камеру, но курсор остаётся видимым. Это ограничение WSLg, а не программы.
 
 ### Формат ввода
 
@@ -179,7 +219,7 @@ $$
 1. **Быстрый путь.** Определитель считается в `double` и сравнивается с гарантированной верхней оценкой ошибки округления. Оценка пропорциональна сумме модулей слагаемых определителя. Если модуль результата больше оценки, знак не может быть искажён. На реальных данных это почти все вызовы.
 2. **Точный путь.** Иначе определитель пересчитывается без округлений. Число записывается как точная сумма нескольких `double`, которые не перекрываются по разрядам. Сумму и произведение двух `double` можно записать точно как пару «округлённый результат + его ошибка», и из таких пар собирается весь определитель. Знак такой суммы равен знаку её самого большого по модулю слагаемого.
 
-Знак получается точным для любых конечных координат. Бесконечность и `NaN` в аргументах считаются ошибкой.
+Бесконечность и `NaN` в аргументах считаются ошибкой.
 
 > [!IMPORTANT]
 > Точный путь опирается на то, что каждая операция округляется ровно так, как записана. Поэтому файл предикатов собирается со строгой плавающей точкой (`-ffp-contract=off`, `-fno-fast-math`): компилятору запрещено сливать умножение со сложением и переставлять операции.
@@ -342,16 +382,48 @@ $$
 
 ## Тестирование
 
-Тесты используют [GoogleTest](https://github.com/google/googletest) и запускаются через [CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html) после сборки:
+Все тесты запускаются через [CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html) после сборки.
 
 ```bash
-ctest --test-dir output --output-on-failure
+ctest --test-dir build --output-on-failure
 ```
 
-Запуск одной группы — `geometry`, `scene`, `graphics` или `e2e` (консольная версия на файлах ввода):
+### Модульные тесты
+
+Используют [GoogleTest](https://github.com/google/googletest). Метки — `geometry`, `scene`, `graphics`:
 
 ```bash
-ctest --test-dir output -L geometry
+ctest --test-dir build -L geometry
+```
+
+### End-to-end тесты
+
+Реализация: [`e2e_tests/`](e2e_tests).
+
+Python-скрипты проверяют собранные программы целиком. Скрипт сам строит ввод, запускает программу и сверяет код возврата, stdout и stderr.
+
+Каждая группа — отдельный тест CTest с меткой `e2e`:
+
+| Тест | Что проверяет |
+|---|---|
+| `e2e_geometry` | пересечения обычных треугольников |
+| `e2e_degenerate` | точки и отрезки |
+| `e2e_scale` | те же сценарии после масштаба `2^±20`, `2^±300` и сдвига на `2^20` |
+| `e2e_search` | большие сцены с известным ответом |
+| `e2e_input` | формат и ошибки ввода |
+| `e2e_visualizer_arguments` | ошибки аргументов `triangles.out` |
+| `e2e_generator` | генератор сцен |
+
+Все e2e-тесты:
+
+```bash
+ctest --test-dir build -L e2e
+```
+
+Одна группа:
+
+```bash
+ctest --test-dir build -R e2e_scale --output-on-failure
 ```
 
 ## Структура проекта
@@ -394,11 +466,7 @@ ctest --test-dir output -L geometry
 │       └── input_reader_tests.cpp
 ├── cli/
 │   ├── CMakeLists.txt
-│   ├── main.cpp                        # консольная версия
-│   └── tests/
-│       ├── CMakeLists.txt
-│       ├── run_e2e.cmake               # запуск triangles_cli и сверка ответа
-│       └── data/                       # пары *.in / *.out
+│   └── main.cpp                        # консольная версия
 ├── scene/
 │   ├── CMakeLists.txt
 │   ├── headers/
@@ -431,7 +499,14 @@ ctest --test-dir output -L geometry
 │   │   └── shader_sources.hpp.in       # шаблон заголовка с текстом шейдеров
 │   └── tests/
 │       ├── CMakeLists.txt
-│       └── camera_tests.cpp
+│       ├── camera_tests.cpp
+│       └── theme_tests.cpp
+├── e2e_tests/
+│   ├── CMakeLists.txt                  # регистрация e2e в CTest
+│   ├── common.py                       # заготовки, кодирование ввода, запуск и сверка
+│   ├── cli_e2e.py                      # сценарии для triangles_cli
+│   ├── visualizer_e2e.py               # ошибки аргументов triangles.out
+│   └── generator_e2e.py                # проверки generate_scene.py
 ├── tools/
 │   └── generate_scene.py               # генератор случайных сцен
 ├── assets/                             # скриншоты для README
