@@ -7,3 +7,4 @@ function(add_graphics_test target_name source_file)
 endfunction()
 
 add_graphics_test(camera_tests camera_tests.cpp)
+add_graphics_test(theme_tests theme_tests.cpp)
