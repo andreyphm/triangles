@@ -4,8 +4,8 @@ flat in vec3 triangle_color;
 
 out vec4 color;
 
-const float ambient_strength = 0.25;
-const float diffuse_strength = 0.75;
+const float ambient_strength = 0.65;
+const float diffuse_strength = 0.35;
 
 void main() {
     vec3 normal = normalize(cross(dFdx(point_position), dFdy(point_position)));
