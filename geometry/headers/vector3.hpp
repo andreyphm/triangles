@@ -24,21 +24,21 @@ public:
         };
     }
 
-    Vector3& operator+=(const Vector3& other) {
+    Vector3& operator+=(const Vector3& other) & {
         x_ += other.x_;
         y_ += other.y_;
         z_ += other.z_;
         return *this;
     }
 
-    Vector3& operator-=(const Vector3& other) {
+    Vector3& operator-=(const Vector3& other) & {
         x_ -= other.x_;
         y_ -= other.y_;
         z_ -= other.z_;
         return *this;
     }
 
-    Vector3& operator*=(double scalar) {
+    Vector3& operator*=(double scalar) & {
         x_ *= scalar;
         y_ *= scalar;
         z_ *= scalar;

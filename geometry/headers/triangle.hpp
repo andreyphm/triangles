@@ -11,7 +11,9 @@ class Triangle {
 public:
     Triangle(const Point3& first, const Point3& second, const Point3& third);
 
-    const Point3& vertex(std::size_t index) const { return vertices_.at(index); }
+    const Point3& vertex(std::size_t index) const & { return vertices_.at(index); }
+    const Point3& vertex(std::size_t index) const && = delete;
+
     Vector3 edge(std::size_t index) const;
     Vector3 normal() const;
 
