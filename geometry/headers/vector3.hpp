@@ -45,7 +45,7 @@ public:
         return *this;
     }
 
-    bool operator==(const Vector3& other) const { return x_ == other.x_ && y_ == other.y_ && z_ == other.z_; }
+    bool operator==(const Vector3& other) const = default;
     Vector3 operator-() const { return {-x_, -y_, -z_}; }
 
     bool is_finite() const { return std::isfinite(x_) && std::isfinite(y_) && std::isfinite(z_); }
