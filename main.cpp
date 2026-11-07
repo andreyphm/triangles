@@ -137,7 +137,7 @@ int main(int argc, char* argv[]) {
 
     const std::optional<std::size_t> initial_theme = parse_theme(argc, argv);
     if (!initial_theme) {
-        print_usage(argc > 0 ? argv[0] : "triangles.out");
+        print_usage(argc > 0 ? argv[0] : "triangles");
         return EXIT_FAILURE;
     }
 

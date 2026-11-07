@@ -31,10 +31,10 @@ CASES: tuple[Case, ...] = (
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Argument checks of triangles.out before a window opens."
+        description="Argument checks of triangles before a window opens."
     )
     parser.add_argument(
-        "--binary", type=Path, required=True, help="Path to triangles.out"
+        "--binary", type=Path, required=True, help="Path to triangles"
     )
     return parser.parse_args()
 

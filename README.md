@@ -104,11 +104,11 @@ cmd /c ".\build\cli\triangles_cli.exe < examples\cloud_5k.in"
 Visualizer (optionally with a [color theme](#color-themes)):
 
 ```powershell
-cmd /c ".\build\triangles.out.exe [--theme ...] < examples\cloud_5k.in"
+cmd /c ".\build\triangles.exe [--theme ...] < examples\cloud_5k.in"
 ```
 
 > [!TIP]
-> PowerShell has no `<` input redirection, and piping with `Get-Content file | program` corrupts the input, so the programs are launched through `cmd /c`. In an MSYS2 terminal the usual syntax works: `./build/triangles.out < examples/cloud_5k.in`.
+> PowerShell has no `<` input redirection, and piping with `Get-Content file | program` corrupts the input, so the programs are launched through `cmd /c`. In an MSYS2 terminal the usual syntax works: `./build/triangles < examples/cloud_5k.in`.
 
 ### Linux
 
@@ -121,7 +121,7 @@ Command-line version:
 Visualizer:
 
 ```bash
-./build/triangles.out [--theme ...] < examples/cloud_5k.in
+./build/triangles [--theme ...] < examples/cloud_5k.in
 ```
 
 > [!NOTE]
@@ -411,7 +411,7 @@ Each group is a separate CTest test labeled `e2e`:
 | `e2e_scale` | the same scenarios scaled by `2^±20`, `2^±300` and shifted by `2^20` |
 | `e2e_search` | large scenes with a known answer |
 | `e2e_input` | input format and input errors |
-| `e2e_visualizer_arguments` | invalid arguments to `triangles.out` |
+| `e2e_visualizer_arguments` | invalid arguments to `triangles` |
 | `e2e_generator` | the scene generator |
 
 All e2e tests:
@@ -505,7 +505,7 @@ ctest --test-dir build -R e2e_scale --output-on-failure
 │   ├── CMakeLists.txt                  # registers e2e tests with CTest
 │   ├── common.py                       # building blocks, input encoding, running and checking
 │   ├── cli_e2e.py                      # scenarios for triangles_cli
-│   ├── visualizer_e2e.py               # invalid arguments to triangles.out
+│   ├── visualizer_e2e.py               # invalid arguments to triangles
 │   └── generator_e2e.py                # checks for generate_scene.py
 ├── tools/
 │   └── generate_scene.py               # random scene generator

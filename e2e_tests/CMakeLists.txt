@@ -12,7 +12,7 @@ endforeach()
 
 add_test(NAME e2e_visualizer_arguments
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/visualizer_e2e.py
-        --binary $<TARGET_FILE:triangles.out>)
+        --binary $<TARGET_FILE:triangles>)
 
 add_test(NAME e2e_generator
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/generator_e2e.py
