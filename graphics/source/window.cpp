@@ -22,20 +22,19 @@ constexpr int screen_refreshes_per_frame = 1;
 
 constexpr GLfloat background_alpha = 1.0f;
 
-GLFWwindow* create_window(int width, int height, const char* title) {
+GlfwWindowPtr create_window(int width, int height, const char* title) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, opengl_major_version);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, opengl_minor_version);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* const handle = glfwCreateWindow(width, height, title, nullptr, nullptr);
+    GlfwWindowPtr handle{glfwCreateWindow(width, height, title, nullptr, nullptr)};
     if (!handle) {
         throw std::runtime_error("failed to create window with OpenGL " + std::to_string(opengl_major_version)
                                 + "." + std::to_string(opengl_minor_version) + " core context");
     }
 
-    glfwMakeContextCurrent(handle);
+    glfwMakeContextCurrent(handle.get());
     if (!gladLoadGL(glfwGetProcAddress)) {
-        glfwDestroyWindow(handle);
         throw std::runtime_error("failed to load OpenGL functions");
     }
 
@@ -72,6 +71,8 @@ int glfw_key(Key key) {
 
 } // namespace
 
+void GlfwWindowDeleter::operator()(GLFWwindow* handle) const { glfwDestroyWindow(handle); }
+
 GlfwLibrary::GlfwLibrary() {
     if (glfwInit() == GLFW_FALSE) {
         throw std::runtime_error("failed to initialize GLFW");
@@ -83,27 +84,23 @@ GlfwLibrary::~GlfwLibrary() {
 }
 
 Window::Window(int width, int height, const char* title)
-    : handle_(create_window(width, height, title)), last_cursor_position_(cursor_position(handle_)) {
-    glfwSetWindowUserPointer(handle_, this);
-    glfwSetScrollCallback(handle_, handle_scroll);
-}
-
-Window::~Window() {
-    glfwDestroyWindow(handle_);
+    : handle_(create_window(width, height, title)), last_cursor_position_(cursor_position(handle_.get())) {
+    glfwSetWindowUserPointer(handle_.get(), this);
+    glfwSetScrollCallback(handle_.get(), handle_scroll);
 }
 
 bool Window::should_close() const {
-    return glfwWindowShouldClose(handle_) == GLFW_TRUE;
+    return glfwWindowShouldClose(handle_.get()) == GLFW_TRUE;
 }
 
 void Window::request_close() {
-    glfwSetWindowShouldClose(handle_, GLFW_TRUE);
+    glfwSetWindowShouldClose(handle_.get(), GLFW_TRUE);
 }
 
 float Window::aspect_ratio() const {
     int width = 0;
     int height = 0;
-    glfwGetFramebufferSize(handle_, &width, &height);
+    glfwGetFramebufferSize(handle_.get(), &width, &height);
     if (width == 0 || height == 0) {
         return 1.0f;
     }
@@ -114,7 +111,7 @@ float Window::aspect_ratio() const {
 void Window::clear(const glm::vec3& background) {
     int width = 0;
     int height = 0;
-    glfwGetFramebufferSize(handle_, &width, &height);
+    glfwGetFramebufferSize(handle_.get(), &width, &height);
     glViewport(0, 0, width, height);
 
     glClearColor(background.r, background.g, background.b, background_alpha);
@@ -122,7 +119,7 @@ void Window::clear(const glm::vec3& background) {
 }
 
 void Window::swap_buffers() {
-    glfwSwapBuffers(handle_);
+    glfwSwapBuffers(handle_.get());
 }
 
 void Window::poll_events() {
@@ -131,8 +128,8 @@ void Window::poll_events() {
 
 void Window::set_redraw_callback(std::function<void()> redraw) {
     redraw_ = std::move(redraw);
-    glfwSetWindowRefreshCallback(handle_, handle_refresh);
-    glfwSetFramebufferSizeCallback(handle_, handle_framebuffer_resize);
+    glfwSetWindowRefreshCallback(handle_.get(), handle_refresh);
+    glfwSetFramebufferSizeCallback(handle_.get(), handle_framebuffer_resize);
 }
 
 void Window::handle_refresh(GLFWwindow* handle) {
@@ -152,7 +149,7 @@ void Window::handle_scroll(GLFWwindow* handle, double, double y_offset) {
 }
 
 bool Window::is_key_pressed(Key key) const {
-    return (glfwGetKey(handle_, glfw_key(key)) == GLFW_PRESS);
+    return (glfwGetKey(handle_.get(), glfw_key(key)) == GLFW_PRESS);
 }
 
 void Window::set_cursor_captured(bool captured) {
@@ -160,14 +157,14 @@ void Window::set_cursor_captured(bool captured) {
         return;
     }
 
-    glfwSetInputMode(handle_, GLFW_CURSOR, captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+    glfwSetInputMode(handle_.get(), GLFW_CURSOR, captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     cursor_captured_ = captured;
-    last_cursor_position_ = cursor_position(handle_);
+    last_cursor_position_ = cursor_position(handle_.get());
 }
 
 glm::vec2 Window::take_cursor_movement() {
-    const glm::dvec2 position = cursor_position(handle_);
-    const bool focused = glfwGetWindowAttrib(handle_, GLFW_FOCUSED) == GLFW_TRUE;
+    const glm::dvec2 position = cursor_position(handle_.get());
+    const bool focused = glfwGetWindowAttrib(handle_.get(), GLFW_FOCUSED) == GLFW_TRUE;
     const bool tracking = focused && was_focused_;
     was_focused_ = focused;
 

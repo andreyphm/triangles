@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <string>
+#include <memory>
 
 struct GLFWwindow;
 
@@ -23,8 +24,7 @@ enum class Key {
     right
 };
 
-class GlfwLibrary {
-public:
+struct GlfwLibrary {
     GlfwLibrary();
     ~GlfwLibrary();
 
@@ -32,13 +32,14 @@ public:
     GlfwLibrary& operator=(const GlfwLibrary&) = delete;
 };
 
+struct GlfwWindowDeleter {
+    void operator()(GLFWwindow* handle) const;
+};
+using GlfwWindowPtr = std::unique_ptr<GLFWwindow, GlfwWindowDeleter>;
+
 class Window {
 public:
     Window(int width, int height, const char* title);
-    ~Window();
-
-    Window(const Window&) = delete;
-    Window& operator=(const Window&) = delete;
 
     bool should_close() const;
     void request_close();
@@ -62,7 +63,7 @@ private:
     static void handle_scroll(GLFWwindow* handle, double x_offset, double y_offset);
 
     GlfwLibrary library_;
-    GLFWwindow* handle_;
+    GlfwWindowPtr handle_;
     std::function<void()> redraw_;
     bool cursor_captured_ = false;
     glm::dvec2 last_cursor_position_;
