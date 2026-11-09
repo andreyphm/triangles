@@ -14,18 +14,22 @@ constexpr GLuint intersecting_location = 1;
 constexpr GLint coordinates_per_vertex = 3;
 constexpr GLint components_per_flag = 1;
 
-GLuint create_vertex_buffer(std::span<const Vertex> vertices) {
-    GLuint buffer = 0;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+BufferHandle create_vertex_buffer(std::span<const Vertex> vertices) {
+    GLuint id = 0;
+    glGenBuffers(1, &id);
+    BufferHandle buffer{id};
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffer.get());
     glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertices.size_bytes()), vertices.data(), GL_STATIC_DRAW);
     return buffer;
 }
 
-GLuint create_vertex_array(GLuint vertex_buffer) {
-    GLuint vertex_array = 0;
-    glGenVertexArrays(1, &vertex_array);
-    glBindVertexArray(vertex_array);
+VertexArrayHandle create_vertex_array(GLuint vertex_buffer) {
+    GLuint id = 0;
+    glGenVertexArrays(1, &id);
+    VertexArrayHandle vertex_array{id};
+
+    glBindVertexArray(vertex_array.get());
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 
     constexpr GLsizei stride = sizeof(Vertex);
@@ -46,15 +50,10 @@ GLuint create_vertex_array(GLuint vertex_buffer) {
 GpuTriangles::GpuTriangles(std::span<const Vertex> vertices)
     : vertex_count_(static_cast<int>(vertices.size())),
       vertex_buffer_(create_vertex_buffer(vertices)),
-      vertex_array_(create_vertex_array(vertex_buffer_)) {}
-
-GpuTriangles::~GpuTriangles() {
-    glDeleteVertexArrays(1, &vertex_array_);
-    glDeleteBuffers(1, &vertex_buffer_);
-}
+      vertex_array_(create_vertex_array(vertex_buffer_.get())) {}
 
 void GpuTriangles::draw() const {
-    glBindVertexArray(vertex_array_);
+    glBindVertexArray(vertex_array_.get());
     glDrawArrays(GL_TRIANGLES, 0, vertex_count_);
 }
 

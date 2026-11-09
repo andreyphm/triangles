@@ -27,7 +27,17 @@ struct ProgramDeleter {
     void operator()(unsigned int id) const;
 };
 
+struct BufferDeleter {
+    void operator()(unsigned int id) const;
+};
+
+struct VertexArrayDeleter {
+    void operator()(unsigned int id) const;
+};
+
 using ShaderHandle = GlObject<ShaderDeleter>;
 using ProgramHandle = GlObject<ProgramDeleter>;
+using BufferHandle = GlObject<BufferDeleter>;
+using VertexArrayHandle = GlObject<VertexArrayDeleter>;
 
 } // namespace graphics
