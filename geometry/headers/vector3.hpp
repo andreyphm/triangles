@@ -4,56 +4,50 @@
 
 namespace geometry {
 
-class Vector3 {
-public:
+struct Vector3 {
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+
     Vector3() = default;
-    Vector3(double x, double y, double z) : x_(x), y_(y), z_(z) {}
+    Vector3(double x_value, double y_value, double z_value) : x(x_value), y(y_value), z(z_value) {}
 
-    double x() const { return x_; }
-    double y() const { return y_; }
-    double z() const { return z_; }
-
-    double scalar_product(const Vector3& other) const { return x_ * other.x_ + y_ * other.y_ + z_ * other.z_; }
+    double scalar_product(const Vector3& other) const { return x * other.x + y * other.y + z * other.z; }
     double squared_length() const { return scalar_product(*this); }
 
     Vector3 vector_product(const Vector3& other) const {
         return {
-            y_ * other.z_ - z_ * other.y_,
-            z_ * other.x_ - x_ * other.z_,
-            x_ * other.y_ - y_ * other.x_
+            y * other.z - z * other.y,
+            z * other.x - x * other.z,
+            x * other.y - y * other.x
         };
     }
 
     Vector3& operator+=(const Vector3& other) & {
-        x_ += other.x_;
-        y_ += other.y_;
-        z_ += other.z_;
+        x += other.x;
+        y += other.y;
+        z += other.z;
         return *this;
     }
 
     Vector3& operator-=(const Vector3& other) & {
-        x_ -= other.x_;
-        y_ -= other.y_;
-        z_ -= other.z_;
+        x -= other.x;
+        y -= other.y;
+        z -= other.z;
         return *this;
     }
 
     Vector3& operator*=(double scalar) & {
-        x_ *= scalar;
-        y_ *= scalar;
-        z_ *= scalar;
+        x *= scalar;
+        y *= scalar;
+        z *= scalar;
         return *this;
     }
 
     bool operator==(const Vector3& other) const = default;
-    Vector3 operator-() const { return {-x_, -y_, -z_}; }
+    Vector3 operator-() const { return {-x, -y, -z}; }
 
-    bool is_finite() const { return std::isfinite(x_) && std::isfinite(y_) && std::isfinite(z_); }
-
-private:
-    double x_ = 0.0;
-    double y_ = 0.0;
-    double z_ = 0.0;
+    bool is_finite() const { return std::isfinite(x) && std::isfinite(y) && std::isfinite(z); }
 };
 
 inline Vector3 operator+(Vector3 left, const Vector3& right) {

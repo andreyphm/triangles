@@ -4,19 +4,14 @@
 
 namespace geometry {
 
-class Vector2 {
-public:
+struct Vector2 {
+    double x = 0.0;
+    double y = 0.0;
+
     Vector2() = default;
-    Vector2(double x, double y) : x_(x), y_(y) {}
+    Vector2(double x_value, double y_value) : x(x_value), y(y_value) {}
 
-    double x() const { return x_; }
-    double y() const { return y_; }
-
-    bool is_finite() const { return std::isfinite(x_) && std::isfinite(y_); }
-
-private:
-    double x_ = 0.0;
-    double y_ = 0.0;
+    bool is_finite() const { return std::isfinite(x) && std::isfinite(y); }
 };
 
 } // namespace geometry

@@ -46,15 +46,15 @@ bool contains_both_nonzero_signs(const std::array<PredicateSign, 3>& signs) {
 }
 
 Vector2 project_xy(const Point3& point) {
-    return {point.x(), point.y()};
+    return {point.x, point.y};
 }
 
 Vector2 project_yz(const Point3& point) {
-    return {point.y(), point.z()};
+    return {point.y, point.z};
 }
 
 Vector2 project_zx(const Point3& point) {
-    return {point.z(), point.x()};
+    return {point.z, point.x};
 }
 
 Vector2 project(const Point3& point, ProjectionPlane projection_plane) {
@@ -102,9 +102,9 @@ bool point_on_segment(const Point3& point, const Segment& segment) {
     const bool collinear_zx = is_zero(orient2d(project_zx(segment.first), project_zx(segment.second), project_zx(point)));
 
     return collinear_xy && collinear_yz && collinear_zx
-        && value_is_between(point.x(), segment.first.x(), segment.second.x())
-        && value_is_between(point.y(), segment.first.y(), segment.second.y())
-        && value_is_between(point.z(), segment.first.z(), segment.second.z());
+        && value_is_between(point.x, segment.first.x, segment.second.x)
+        && value_is_between(point.y, segment.first.y, segment.second.y)
+        && value_is_between(point.z, segment.first.z, segment.second.z);
 }
 
 ProjectionPlane select_projection_plane(const Triangle& triangle) {
@@ -150,8 +150,8 @@ bool point_in_triangle(const Point3& point, const Triangle& triangle) {
 
 bool point_on_segment_2d(const Vector2& point, const Vector2& first, const Vector2& second) {
     return is_zero(orient2d(first, second, point))
-        && value_is_between(point.x(), first.x(), second.x())
-        && value_is_between(point.y(), first.y(), second.y());
+        && value_is_between(point.x, first.x, second.x)
+        && value_is_between(point.y, first.y, second.y);
 }
 
 bool segments_intersect_2d(const Vector2& first_begin, const Vector2& first_end, const Vector2& second_begin, const Vector2& second_end) {

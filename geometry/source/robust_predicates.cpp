@@ -152,10 +152,10 @@ void require_finite(const Point3& first, const Point3& second, const Point3& thi
 PredicateSign orient2d(const Vector2& first, const Vector2& second, const Vector2& third) {
     require_finite(first, second, third);
 
-    const double first_x  = first.x()  - third.x();
-    const double first_y  = first.y()  - third.y();
-    const double second_x = second.x() - third.x();
-    const double second_y = second.y() - third.y();
+    const double first_x  = first.x  - third.x;
+    const double first_y  = first.y  - third.y;
+    const double second_x = second.x - third.x;
+    const double second_y = second.y - third.y;
 
     const double left  = first_x * second_y;
     const double right = first_y * second_x;
@@ -168,10 +168,10 @@ PredicateSign orient2d(const Vector2& first, const Vector2& second, const Vector
         return sign_of(determinant);
     }
 
-    const Expansion exact_first_x  = exact_sub(first.x(), third.x());
-    const Expansion exact_first_y  = exact_sub(first.y(), third.y());
-    const Expansion exact_second_x = exact_sub(second.x(), third.x());
-    const Expansion exact_second_y = exact_sub(second.y(), third.y());
+    const Expansion exact_first_x  = exact_sub(first.x, third.x);
+    const Expansion exact_first_y  = exact_sub(first.y, third.y);
+    const Expansion exact_second_x = exact_sub(second.x, third.x);
+    const Expansion exact_second_y = exact_sub(second.y, third.y);
 
     return exact_first_x.mul(exact_second_y).sub(exact_first_y.mul(exact_second_x)).sign();
 }
@@ -179,15 +179,15 @@ PredicateSign orient2d(const Vector2& first, const Vector2& second, const Vector
 PredicateSign orient3d(const Point3& first, const Point3& second, const Point3& third, const Point3& fourth) {
     require_finite(first, second, third, fourth);
 
-    const double first_x  = first.x()  - fourth.x();
-    const double first_y  = first.y()  - fourth.y();
-    const double first_z  = first.z()  - fourth.z();
-    const double second_x = second.x() - fourth.x();
-    const double second_y = second.y() - fourth.y();
-    const double second_z = second.z() - fourth.z();
-    const double third_x  = third.x()  - fourth.x();
-    const double third_y  = third.y()  - fourth.y();
-    const double third_z  = third.z()  - fourth.z();
+    const double first_x  = first.x  - fourth.x;
+    const double first_y  = first.y  - fourth.y;
+    const double first_z  = first.z  - fourth.z;
+    const double second_x = second.x - fourth.x;
+    const double second_y = second.y - fourth.y;
+    const double second_z = second.z - fourth.z;
+    const double third_x  = third.x  - fourth.x;
+    const double third_y  = third.y  - fourth.y;
+    const double third_z  = third.z  - fourth.z;
 
     const double second_x_third_y = second_x * third_y;
     const double third_x_second_y = third_x  * second_y;
@@ -212,15 +212,15 @@ PredicateSign orient3d(const Point3& first, const Point3& second, const Point3& 
         return sign_of(determinant);
     }
 
-    const Expansion exact_first_x  = exact_sub(first.x(),  fourth.x());
-    const Expansion exact_first_y  = exact_sub(first.y(),  fourth.y());
-    const Expansion exact_first_z  = exact_sub(first.z(),  fourth.z());
-    const Expansion exact_second_x = exact_sub(second.x(), fourth.x());
-    const Expansion exact_second_y = exact_sub(second.y(), fourth.y());
-    const Expansion exact_second_z = exact_sub(second.z(), fourth.z());
-    const Expansion exact_third_x  = exact_sub(third.x(),  fourth.x());
-    const Expansion exact_third_y  = exact_sub(third.y(),  fourth.y());
-    const Expansion exact_third_z  = exact_sub(third.z(),  fourth.z());
+    const Expansion exact_first_x  = exact_sub(first.x,  fourth.x);
+    const Expansion exact_first_y  = exact_sub(first.y,  fourth.y);
+    const Expansion exact_first_z  = exact_sub(first.z,  fourth.z);
+    const Expansion exact_second_x = exact_sub(second.x, fourth.x);
+    const Expansion exact_second_y = exact_sub(second.y, fourth.y);
+    const Expansion exact_second_z = exact_sub(second.z, fourth.z);
+    const Expansion exact_third_x  = exact_sub(third.x,  fourth.x);
+    const Expansion exact_third_y  = exact_sub(third.y,  fourth.y);
+    const Expansion exact_third_z  = exact_sub(third.z,  fourth.z);
 
     const Expansion first_minor  = exact_second_x.mul(exact_third_y).sub(exact_third_x.mul(exact_second_y));
     const Expansion second_minor = exact_first_x.mul(exact_third_y).sub(exact_third_x.mul(exact_first_y));

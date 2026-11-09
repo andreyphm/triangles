@@ -17,7 +17,7 @@ constexpr double max_cells_per_box = 16.0;
 using HalfCoordinates = std::array<double, axis_count>;
 
 HalfCoordinates half_coordinates(const Point3& point) {
-    return {0.5 * point.x(), 0.5 * point.y(), 0.5 * point.z()};
+    return {0.5 * point.x, 0.5 * point.y, 0.5 * point.z};
 }
 
 double half_box_size(const BoundingBox& box) {

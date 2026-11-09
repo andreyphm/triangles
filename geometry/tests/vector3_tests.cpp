@@ -9,17 +9,17 @@ using geometry::Vector3;
 TEST(Vector3, default_constructor_creates_zero_vector) {
     const Vector3 vector;
 
-    EXPECT_DOUBLE_EQ(vector.x(), 0.0);
-    EXPECT_DOUBLE_EQ(vector.y(), 0.0);
-    EXPECT_DOUBLE_EQ(vector.z(), 0.0);
+    EXPECT_DOUBLE_EQ(vector.x, 0.0);
+    EXPECT_DOUBLE_EQ(vector.y, 0.0);
+    EXPECT_DOUBLE_EQ(vector.z, 0.0);
 }
 
 TEST(Vector3, constructor_stores_components) {
     const Vector3 vector{1.5, -2.0, 4.25};
 
-    EXPECT_DOUBLE_EQ(vector.x(), 1.5);
-    EXPECT_DOUBLE_EQ(vector.y(), -2.0);
-    EXPECT_DOUBLE_EQ(vector.z(), 4.25);
+    EXPECT_DOUBLE_EQ(vector.x, 1.5);
+    EXPECT_DOUBLE_EQ(vector.y, -2.0);
+    EXPECT_DOUBLE_EQ(vector.z, 4.25);
 }
 
 TEST(Vector3, calculates_scalar_product) {

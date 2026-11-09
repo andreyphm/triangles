@@ -56,7 +56,7 @@ TEST(Predicates, orient2d_resolves_rounded_determinant) {
     const Vector2 second{1.0, below_one};
     const Vector2 third{0.0, 0.0};
 
-    const double rounded_determinant = first.x() * second.y() - first.y() * second.x();
+    const double rounded_determinant = first.x * second.y - first.y * second.x;
     ASSERT_EQ(rounded_determinant, 0.0);
     EXPECT_EQ(orient2d(first, second, third), PredicateSign::positive);
     EXPECT_EQ(orient2d(second, first, third), PredicateSign::negative);
@@ -65,8 +65,8 @@ TEST(Predicates, orient2d_resolves_rounded_determinant) {
         SCOPED_TRACE(exponent);
         const double scale = std::ldexp(1.0, exponent);
         EXPECT_EQ(orient2d(
-                Vector2(first.x() * scale, first.y() * scale),
-                Vector2(second.x() * scale, second.y() * scale),
+                Vector2(first.x * scale, first.y * scale),
+                Vector2(second.x * scale, second.y * scale),
                 third),
             PredicateSign::positive);
     }
@@ -102,15 +102,15 @@ TEST(Predicates, orient2d_preserves_sign_under_translation_and_scaling) {
 
     EXPECT_EQ(
         orient2d(
-            Vector2(first.x() + 1024.0, first.y() - 2048.0),
-            Vector2(second.x() + 1024.0, second.y() - 2048.0),
-            Vector2(third.x() + 1024.0, third.y() - 2048.0)),
+            Vector2(first.x + 1024.0, first.y - 2048.0),
+            Vector2(second.x + 1024.0, second.y - 2048.0),
+            Vector2(third.x + 1024.0, third.y - 2048.0)),
         sign);
     EXPECT_EQ(
         orient2d(
-            Vector2(first.x() * 0x1p-40, first.y() * 0x1p-40),
-            Vector2(second.x() * 0x1p-40, second.y() * 0x1p-40),
-            Vector2(third.x() * 0x1p-40, third.y() * 0x1p-40)),
+            Vector2(first.x * 0x1p-40, first.y * 0x1p-40),
+            Vector2(second.x * 0x1p-40, second.y * 0x1p-40),
+            Vector2(third.x * 0x1p-40, third.y * 0x1p-40)),
         sign);
 }
 
@@ -156,7 +156,7 @@ TEST(Predicates, orient3d_resolves_rounded_determinant) {
     const Vector3 third{0.0, 0.0, 0.0};
     const Vector3 fourth{0.0, 0.0, 1.0};
 
-    const double rounded_minor = first.x() * second.y() - first.y() * second.x();
+    const double rounded_minor = first.x * second.y - first.y * second.x;
     ASSERT_EQ(rounded_minor, 0.0);
     EXPECT_EQ(orient3d(first, second, third, fourth), PredicateSign::negative);
 
@@ -201,10 +201,10 @@ TEST(Predicates, orient3d_preserves_sign_under_translation_and_scaling) {
 
     EXPECT_EQ(
         orient3d(
-            Vector3(points[0].x() + 1024.0, points[0].y() - 2048.0, points[0].z() + 4096.0),
-            Vector3(points[1].x() + 1024.0, points[1].y() - 2048.0, points[1].z() + 4096.0),
-            Vector3(points[2].x() + 1024.0, points[2].y() - 2048.0, points[2].z() + 4096.0),
-            Vector3(points[3].x() + 1024.0, points[3].y() - 2048.0, points[3].z() + 4096.0)),
+            Vector3(points[0].x + 1024.0, points[0].y - 2048.0, points[0].z + 4096.0),
+            Vector3(points[1].x + 1024.0, points[1].y - 2048.0, points[1].z + 4096.0),
+            Vector3(points[2].x + 1024.0, points[2].y - 2048.0, points[2].z + 4096.0),
+            Vector3(points[3].x + 1024.0, points[3].y - 2048.0, points[3].z + 4096.0)),
         sign);
     EXPECT_EQ(
         orient3d(
