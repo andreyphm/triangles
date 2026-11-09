@@ -36,25 +36,8 @@ std::string program_info_log(GLuint program) {
     return log;
 }
 
-class Shader {
-public:
-    explicit Shader(GLuint handle) : id_(handle) {}
-    ~Shader() { glDeleteShader(id_); }
-
-    Shader(const Shader&) = delete;
-    Shader& operator=(const Shader&) = delete;
-
-    Shader(Shader&& other) noexcept : id_(other.id_) { other.id_ = 0; }
-    Shader& operator=(Shader&&) = delete;
-
-    GLuint get() const { return id_; }
-
-private:
-    GLuint id_;
-};
-
-Shader compile_shader(GLenum type, std::string_view source) {
-    Shader shader{glCreateShader(type)};
+ShaderHandle compile_shader(GLenum type, std::string_view source) {
+    ShaderHandle shader{glCreateShader(type)};
     if (!shader.get()) {
         throw std::runtime_error(std::string{"failed to create "} + shader_name(type));
     }
@@ -75,8 +58,8 @@ Shader compile_shader(GLenum type, std::string_view source) {
 }
 
 ProgramHandle create_program(std::string_view vertex_source, std::string_view fragment_source) {
-    const Shader vertex_shader{compile_shader(GL_VERTEX_SHADER, vertex_source)};
-    const Shader fragment_shader{compile_shader(GL_FRAGMENT_SHADER, fragment_source)};
+    const ShaderHandle vertex_shader{compile_shader(GL_VERTEX_SHADER, vertex_source)};
+    const ShaderHandle fragment_shader{compile_shader(GL_FRAGMENT_SHADER, fragment_source)};
 
     ProgramHandle program{glCreateProgram()};
     if (!program.get()) {
@@ -98,10 +81,6 @@ ProgramHandle create_program(std::string_view vertex_source, std::string_view fr
 }
 
 } // namespace
-
-ProgramHandle::~ProgramHandle() {
-    glDeleteProgram(id_);
-}
 
 ShaderProgram::ShaderProgram(std::string_view vertex_source, std::string_view fragment_source)
     : id_(create_program(vertex_source, fragment_source)) {}

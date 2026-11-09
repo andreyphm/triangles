@@ -45,6 +45,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 
 add_library(triangles_graphics STATIC
     source/camera.cpp
+    source/gl_object.cpp
     source/gpu_triangles.cpp
     source/shader_program.cpp
     source/shaders.cpp
