@@ -62,13 +62,23 @@ float scrolled_movement_speed(graphics::Window& window, float movement_speed) {
     return std::clamp(movement_speed * factor, min_movement_speed, max_movement_speed);
 }
 
-void control_camera(graphics::Window& window, graphics::Camera& camera, float& movement_speed, float frame_seconds) {
+bool key_just_pressed(const graphics::Window& window, graphics::Key key, bool& was_pressed) {
+    const bool pressed = window.is_key_pressed(key);
+    const bool just_pressed = pressed && !was_pressed;
+    was_pressed = pressed;
+    return just_pressed;
+}
+
+void control_camera(graphics::Window& window, graphics::Camera& camera, float& movement_speed, bool& alt_was_pressed,
+                    float frame_seconds) {
     if (window.is_key_pressed(graphics::Key::escape)) {
         window.request_close();
         return;
     }
 
-    window.set_cursor_captured(!window.is_key_pressed(graphics::Key::left_alt));
+    if (key_just_pressed(window, graphics::Key::left_alt, alt_was_pressed)) {
+        window.set_cursor_captured(!window.cursor_captured());
+    }
     const glm::vec2 cursor_movement = window.take_cursor_movement();
     if (window.cursor_captured()) {
         camera.rotate(cursor_movement.x * mouse_sensitivity, -cursor_movement.y * mouse_sensitivity);
@@ -99,13 +109,6 @@ void print_usage(std::string_view program) {
         std::cerr << ' ' << theme.name;
     }
     std::cerr << '\n';
-}
-
-bool key_just_pressed(const graphics::Window& window, graphics::Key key, bool& was_pressed) {
-    const bool pressed = window.is_key_pressed(key);
-    const bool just_pressed = pressed && !was_pressed;
-    was_pressed = pressed;
-    return just_pressed;
 }
 
 struct ThemeSwitcher {
@@ -172,7 +175,9 @@ int main(int argc, char* argv[]) {
         };
         window.set_redraw_callback(draw_frame);
 
+        window.set_cursor_captured(true);
         float movement_speed = initial_movement_speed;
+        bool alt_was_pressed = false;
         auto previous_frame_time = std::chrono::steady_clock::now();
         while (!window.should_close()) {
             window.poll_events();
@@ -181,7 +186,7 @@ int main(int argc, char* argv[]) {
             const float frame_seconds = std::chrono::duration<float>(frame_time - previous_frame_time).count();
             previous_frame_time = frame_time;
 
-            control_camera(window, camera, movement_speed, std::min(frame_seconds, max_frame_seconds));
+            control_camera(window, camera, movement_speed, alt_was_pressed, std::min(frame_seconds, max_frame_seconds));
             if (switch_theme(window, theme_switcher)) {
                 apply_theme_colors(shader_program, graphics::themes[theme_switcher.index]);
             }

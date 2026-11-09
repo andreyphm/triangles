@@ -323,7 +323,7 @@ The window shows the whole scene: regular and intersecting triangles are drawn i
 | <kbd>Ctrl</kbd> | ×2 speed while held |
 | Mouse wheel | flight speed: up is faster, down is slower |
 | Mouse | look around |
-| <kbd>Alt</kbd> | show the cursor while held |
+| <kbd>Alt</kbd> | release / capture the cursor |
 | <kbd>←</kbd> / <kbd>→</kbd> | previous / next color theme |
 | <kbd>Esc</kbd> | close the window |
 
