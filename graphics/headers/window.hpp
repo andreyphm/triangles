@@ -41,6 +41,12 @@ class Window {
 public:
     Window(const GlfwLibrary&, int width, int height, const char* title);
 
+    Window(const Window&) = delete;
+    Window& operator=(const Window&) = delete;
+
+    Window(Window&& other) noexcept;
+    Window& operator=(Window&&) = delete;
+
     bool should_close() const;
     void request_close();
     float aspect_ratio() const;

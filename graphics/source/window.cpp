@@ -89,6 +89,18 @@ Window::Window(const GlfwLibrary&, int width, int height, const char* title)
     glfwSetScrollCallback(handle_.get(), handle_scroll);
 }
 
+Window::Window(Window&& other) noexcept
+    : handle_(std::move(other.handle_)),
+      redraw_(std::move(other.redraw_)),
+      cursor_captured_(other.cursor_captured_),
+      last_cursor_position_(other.last_cursor_position_),
+      was_focused_(other.was_focused_),
+      scroll_offset_(other.scroll_offset_) {
+    if (handle_) {
+        glfwSetWindowUserPointer(handle_.get(), this);
+    }
+}
+
 bool Window::should_close() const {
     return glfwWindowShouldClose(handle_.get()) == GLFW_TRUE;
 }
