@@ -1,14 +1,132 @@
 #pragma once
 
+#include "bounding_box.hpp"
+#include "intersection.hpp"
+#include "intersection_flags.hpp"
+#include "triangle.hpp"
+#include "uniform_grid.hpp"
+
+#include <algorithm>
+#include <concepts>
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
 namespace geometry {
 
-class Triangle;
+namespace detail {
 
-using IntersectionFlags = std::vector<std::uint8_t>;
+struct CellEntry {
+    std::uint64_t cell;
+    std::size_t triangle;
+};
 
-IntersectionFlags find_intersecting_triangles(const std::vector<Triangle>& triangles);
+template <std::floating_point T> std::vector<BoundingBox<T>> build_bounding_boxes(const std::vector<Triangle<T>>& triangles) {
+    std::vector<BoundingBox<T>> boxes;
+    boxes.reserve(triangles.size());
+    for (const Triangle<T>& triangle : triangles) {
+        boxes.emplace_back(triangle);
+    }
+    return boxes;
+}
+
+template <std::floating_point T> std::vector<CellRange> build_cell_ranges(const std::vector<BoundingBox<T>>& boxes, const UniformGrid<T>& grid) {
+    std::vector<CellRange> ranges;
+    ranges.reserve(boxes.size());
+    for (const BoundingBox<T>& box : boxes) {
+        ranges.push_back(grid.cell_range(box));
+    }
+    return ranges;
+}
+
+inline std::vector<CellEntry> sorted_cell_entries(const std::vector<CellRange>& ranges) {
+    std::vector<CellEntry> entries;
+    for (std::size_t triangle = 0; triangle < ranges.size(); ++triangle) {
+        const CellRange& range = ranges[triangle];
+        for (std::int64_t x = range.min_cell[0]; x <= range.max_cell[0]; ++x) {
+            for (std::int64_t y = range.min_cell[1]; y <= range.max_cell[1]; ++y) {
+                for (std::int64_t z = range.min_cell[2]; z <= range.max_cell[2]; ++z) {
+                    entries.push_back({cell_key({x, y, z}), triangle});
+                }
+            }
+        }
+    }
+
+    std::sort(entries.begin(), entries.end(), [](const CellEntry& first, const CellEntry& second) {
+        return first.cell < second.cell;
+    });
+    return entries;
+}
+
+inline std::uint64_t reference_cell(const CellRange& first, const CellRange& second) {
+    return cell_key({
+        std::max(first.min_cell[0], second.min_cell[0]),
+        std::max(first.min_cell[1], second.min_cell[1]),
+        std::max(first.min_cell[2], second.min_cell[2])});
+}
+
+} // namespace detail
+
+template <std::floating_point T> IntersectionFlags find_intersecting_triangles(const std::vector<Triangle<T>>& triangles) {
+    IntersectionFlags intersection_flags(triangles.size(), false);
+    if (triangles.empty()) {
+        return intersection_flags;
+    }
+
+    const std::vector<BoundingBox<T>> boxes = detail::build_bounding_boxes(triangles);
+    const UniformGrid<T> grid(boxes);
+    const std::vector<CellRange> ranges = detail::build_cell_ranges(boxes, grid);
+    const std::vector<detail::CellEntry> entries = detail::sorted_cell_entries(ranges);
+    std::size_t marked_triangle_count = 0;
+
+    std::size_t cell_begin = 0;
+    while (cell_begin < entries.size()) {
+        const std::uint64_t cell = entries[cell_begin].cell;
+        std::size_t cell_end = cell_begin;
+        while (cell_end < entries.size() && entries[cell_end].cell == cell) {
+            ++cell_end;
+        }
+
+        for (std::size_t first_entry = cell_begin; first_entry < cell_end; ++first_entry) {
+            for (std::size_t second_entry = first_entry + 1; second_entry < cell_end; ++second_entry) {
+                const std::size_t first = entries[first_entry].triangle;
+                const std::size_t second = entries[second_entry].triangle;
+
+                if (intersection_flags[first] && intersection_flags[second]) {
+                    continue;
+                }
+
+                if (!boxes[first].overlaps(boxes[second])) {
+                    continue;
+                }
+
+                if (detail::reference_cell(ranges[first], ranges[second]) != cell) {
+                    continue;
+                }
+
+                if (!intersects(triangles[first], triangles[second])) {
+                    continue;
+                }
+
+                if (!intersection_flags[first]) {
+                    intersection_flags[first] = true;
+                    ++marked_triangle_count;
+                }
+                if (!intersection_flags[second]) {
+                    intersection_flags[second] = true;
+                    ++marked_triangle_count;
+                }
+
+                if (marked_triangle_count == triangles.size()) {
+                    return intersection_flags;
+                }
+            }
+        }
+
+        cell_begin = cell_end;
+    }
+
+    return intersection_flags;
+}
 
 } // namespace geometry

@@ -19,17 +19,17 @@ constexpr std::size_t vertices_per_triangle = 3;
 constexpr double normalized_scene_half_size = 0.5;
 
 struct SceneBounds {
-    geometry::Vector3 min;
-    geometry::Vector3 max;
+    geometry::Vector3<double> min;
+    geometry::Vector3<double> max;
 };
 
-SceneBounds find_scene_bounds(const std::vector<geometry::Triangle>& triangles) {
-    geometry::Vector3 min = triangles.front().vertex(0);
-    geometry::Vector3 max = min;
+SceneBounds find_scene_bounds(const std::vector<geometry::Triangle<double>>& triangles) {
+    geometry::Vector3<double> min = triangles.front().vertex(0);
+    geometry::Vector3<double> max = min;
 
-    for (const geometry::Triangle& triangle : triangles) {
+    for (const geometry::Triangle<double>& triangle : triangles) {
         for (std::size_t index = 0; index < vertices_per_triangle; ++index) {
-            const geometry::Vector3& vertex = triangle.vertex(index);
+            const geometry::Vector3<double>& vertex = triangle.vertex(index);
             min = {std::min(min.x, vertex.x), std::min(min.y, vertex.y), std::min(min.z, vertex.z)};
             max = {std::max(max.x, vertex.x), std::max(max.y, vertex.y), std::max(max.z, vertex.z)};
         }
@@ -42,12 +42,12 @@ float to_scene_coordinate(double offset, double largest_half_size) {
     return static_cast<float>(offset / largest_half_size * normalized_scene_half_size);
 }
 
-glm::vec3 to_scene_position(const geometry::Vector3& vertex, const geometry::Vector3& center, double largest_half_size) {
+glm::vec3 to_scene_position(const geometry::Vector3<double>& vertex, const geometry::Vector3<double>& center, double largest_half_size) {
     if (largest_half_size == 0.0) {
         return glm::vec3{0.0f};
     }
 
-    const geometry::Vector3 offset = vertex - center;
+    const geometry::Vector3<double> offset = vertex - center;
     return {
         to_scene_coordinate(offset.x, largest_half_size),
         to_scene_coordinate(offset.y, largest_half_size),
@@ -56,7 +56,7 @@ glm::vec3 to_scene_position(const geometry::Vector3& vertex, const geometry::Vec
 
 } // namespace
 
-std::vector<graphics::Vertex> make_vertices(const std::vector<geometry::Triangle>& triangles,
+std::vector<graphics::Vertex> make_vertices(const std::vector<geometry::Triangle<double>>& triangles,
                                             const geometry::IntersectionFlags& intersection_flags) {
     if (triangles.size() != intersection_flags.size()) {
         throw std::invalid_argument("intersection flags must match triangles");
@@ -66,8 +66,8 @@ std::vector<graphics::Vertex> make_vertices(const std::vector<geometry::Triangle
     }
 
     const SceneBounds bounds = find_scene_bounds(triangles);
-    const geometry::Vector3 center = 0.5 * bounds.min + 0.5 * bounds.max;
-    const geometry::Vector3 half_size = 0.5 * bounds.max - 0.5 * bounds.min;
+    const geometry::Vector3<double> center = 0.5 * bounds.min + 0.5 * bounds.max;
+    const geometry::Vector3<double> half_size = 0.5 * bounds.max - 0.5 * bounds.min;
     const double largest_half_size = std::max({half_size.x, half_size.y, half_size.z});
 
     std::vector<graphics::Vertex> vertices;

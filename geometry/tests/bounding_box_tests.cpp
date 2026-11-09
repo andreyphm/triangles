@@ -3,9 +3,9 @@
 
 #include <gtest/gtest.h>
 
-using geometry::BoundingBox;
-using geometry::Triangle;
-using geometry::Vector3;
+using BoundingBox = geometry::BoundingBox<double>;
+using Triangle = geometry::Triangle<double>;
+using Vector3 = geometry::Vector3<double>;
 
 TEST(BoundingBox, overlaps_when_all_coordinate_intervals_overlap) {
     const Triangle first{

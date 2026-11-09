@@ -178,6 +178,8 @@ python tools/generate_scene.py --count 5000 --scene-size 100 --triangle-size 1 3
 
 ## Geometry
 
+The geometry library is header-only and templated on the coordinate type: any `std::floating_point` type (`float`, `double`, `long double`) works. Both programs read and process coordinates as `double`; the text below says `double` for that reason.
+
 ### Problem statement
 
 A triangle is a closed shape: its boundary together with its interior. Two triangles intersect if they share at least one point.
@@ -190,7 +192,7 @@ Three vertices do not have to form a proper triangle:
 
 ### Exact predicates
 
-Implementation: [`geometry/source/robust_predicates.cpp`](geometry/source/robust_predicates.cpp).
+Implementation: [`geometry/headers/robust_predicates.hpp`](geometry/headers/robust_predicates.hpp).
 
 All intersection checks come down to a single question: *which side is the point on?*
 
@@ -222,11 +224,11 @@ The approach follows J. Shewchuk, [*Adaptive Precision Floating-Point Arithmetic
 Infinity and `NaN` arguments are treated as errors.
 
 > [!IMPORTANT]
-> The exact path relies on every operation being rounded exactly as written. That is why the predicates file is compiled with strict floating point (`-ffp-contract=off`, `-fno-fast-math`): the compiler may not fuse a multiply with an add or reorder operations.
+> The exact path relies on every operation being rounded exactly as written. That is why every target that uses the geometry library is compiled with strict floating point (`-ffp-contract=off`, `-fno-fast-math`): the compiler may not fuse a multiply with an add or reorder operations. The `triangles_geometry` CMake target passes these flags on to every target linked with it, and `robust_predicates.hpp` refuses to compile under `-ffast-math` or `/fp:fast`.
 
 ### Intersecting two triangles
 
-Implementation: [`geometry/source/intersection.cpp`](geometry/source/intersection.cpp).
+Implementation: [`geometry/headers/intersection.hpp`](geometry/headers/intersection.hpp).
 
 #### Classification
 
@@ -274,7 +276,7 @@ What to check depends on where the segment's endpoints are relative to the trian
 
 ### Finding all intersecting triangles
 
-Implementation: [`geometry/source/intersection_search.cpp`](geometry/source/intersection_search.cpp), [`geometry/source/uniform_grid.cpp`](geometry/source/uniform_grid.cpp).
+Implementation: [`geometry/headers/intersection_search.hpp`](geometry/headers/intersection_search.hpp), [`geometry/headers/uniform_grid.hpp`](geometry/headers/uniform_grid.hpp).
 
 Checking every pair means `N(N−1)/2` exact checks — about five billion for `N = 100,000`. But only triangles that are close to each other can intersect. So the search runs in two stages: first, nearby candidate pairs are selected cheaply, and only those go through the exact check.
 
@@ -444,16 +446,9 @@ ctest --test-dir build -R e2e_scale --output-on-failure
 │   │   ├── robust_predicates.hpp       # exact orient2d, orient3d predicates
 │   │   ├── intersection.hpp            # intersection of two triangles
 │   │   ├── uniform_grid.hpp            # uniform grid for candidate selection
+│   │   ├── intersection_flags.hpp      # result type: one flag per triangle
 │   │   ├── intersection_search.hpp     # search for all intersecting triangles
 │   │   └── input_reader.hpp            # input parsing
-│   ├── source/
-│   │   ├── triangle.cpp
-│   │   ├── bounding_box.cpp
-│   │   ├── robust_predicates.cpp
-│   │   ├── intersection.cpp
-│   │   ├── uniform_grid.cpp
-│   │   ├── intersection_search.cpp
-│   │   └── input_reader.cpp
 │   └── tests/
 │       ├── CMakeLists.txt
 │       ├── vector3_tests.cpp

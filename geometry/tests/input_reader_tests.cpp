@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
-using geometry::Triangle;
+using Triangle = geometry::Triangle<double>;
 using geometry::TriangleReadResult;
 using geometry::TriangleReadStatus;
-using geometry::Vector3;
+using Vector3 = geometry::Vector3<double>;
 using geometry::read_triangles;
 
 namespace {

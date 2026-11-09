@@ -10,11 +10,11 @@
 #include <limits>
 #include <vector>
 
-using geometry::BoundingBox;
+using BoundingBox = geometry::BoundingBox<double>;
 using geometry::CellRange;
-using geometry::Triangle;
-using geometry::UniformGrid;
-using geometry::Vector3;
+using Triangle = geometry::Triangle<double>;
+using UniformGrid = geometry::UniformGrid<double>;
+using Vector3 = geometry::Vector3<double>;
 
 namespace {
 
@@ -93,9 +93,9 @@ TEST(UniformGrid, limits_covered_cells_when_one_box_is_huge) {
 }
 
 TEST(UniformGrid, gives_different_keys_to_different_cells) {
-    EXPECT_NE(UniformGrid::cell_key({1, 0, 0}), UniformGrid::cell_key({0, 1, 0}));
-    EXPECT_NE(UniformGrid::cell_key({0, 1, 0}), UniformGrid::cell_key({0, 0, 1}));
-    EXPECT_NE(UniformGrid::cell_key({max_cell_index, 0, 0}), UniformGrid::cell_key({0, max_cell_index, max_cell_index}));
+    EXPECT_NE(geometry::cell_key({1, 0, 0}), geometry::cell_key({0, 1, 0}));
+    EXPECT_NE(geometry::cell_key({0, 1, 0}), geometry::cell_key({0, 0, 1}));
+    EXPECT_NE(geometry::cell_key({max_cell_index, 0, 0}), geometry::cell_key({0, max_cell_index, max_cell_index}));
 }
 
 TEST(UniformGrid, accepts_empty_scene) {

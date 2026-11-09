@@ -6,8 +6,8 @@
 #include <array>
 #include <cmath>
 
-using geometry::Triangle;
-using geometry::Vector3;
+using Triangle = geometry::Triangle<double>;
+using Vector3 = geometry::Vector3<double>;
 using geometry::intersects;
 
 namespace {

@@ -10,8 +10,8 @@
 #include <vector>
 
 using geometry::IntersectionFlags;
-using geometry::Triangle;
-using geometry::Vector3;
+using Triangle = geometry::Triangle<double>;
+using Vector3 = geometry::Vector3<double>;
 using graphics::Vertex;
 using scene::make_vertices;
 

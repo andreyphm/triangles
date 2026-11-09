@@ -10,7 +10,7 @@
 int main() {
     std::ios::sync_with_stdio(false);
 
-    std::vector<geometry::Triangle> triangles;
+    std::vector<geometry::Triangle<double>> triangles;
     const geometry::TriangleReadResult read_result = geometry::read_triangles(std::cin, triangles);
     if (!read_result.is_success()) {
         std::cerr << "error: " << read_result.error_message() << '\n';

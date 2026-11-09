@@ -4,7 +4,7 @@
 
 #include <limits>
 
-using geometry::Vector3;
+using Vector3 = geometry::Vector3<double>;
 
 TEST(Vector3, default_constructor_creates_zero_vector) {
     const Vector3 vector;

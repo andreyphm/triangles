@@ -10,8 +10,8 @@
 #include <stdexcept>
 
 using geometry::PredicateSign;
-using geometry::Vector2;
-using geometry::Vector3;
+using Vector2 = geometry::Vector2<double>;
+using Vector3 = geometry::Vector3<double>;
 using geometry::orient2d;
 using geometry::orient3d;
 
