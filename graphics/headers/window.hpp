@@ -39,7 +39,7 @@ using GlfwWindowPtr = std::unique_ptr<GLFWwindow, GlfwWindowDeleter>;
 
 class Window {
 public:
-    Window(int width, int height, const char* title);
+    Window(const GlfwLibrary&, int width, int height, const char* title);
 
     bool should_close() const;
     void request_close();
@@ -62,7 +62,6 @@ private:
     static void handle_framebuffer_resize(GLFWwindow* handle, int width, int height);
     static void handle_scroll(GLFWwindow* handle, double x_offset, double y_offset);
 
-    GlfwLibrary library_;
     GlfwWindowPtr handle_;
     std::function<void()> redraw_;
     bool cursor_captured_ = false;

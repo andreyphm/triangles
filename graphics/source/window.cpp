@@ -83,7 +83,7 @@ GlfwLibrary::~GlfwLibrary() {
     glfwTerminate();
 }
 
-Window::Window(int width, int height, const char* title)
+Window::Window(const GlfwLibrary&, int width, int height, const char* title)
     : handle_(create_window(width, height, title)), last_cursor_position_(cursor_position(handle_.get())) {
     glfwSetWindowUserPointer(handle_.get(), this);
     glfwSetScrollCallback(handle_.get(), handle_scroll);

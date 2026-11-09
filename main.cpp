@@ -151,7 +151,8 @@ int main(int argc, char* argv[]) {
     const geometry::IntersectionFlags intersection_flags = geometry::find_intersecting_triangles(triangles);
 
     try {
-        graphics::Window window{1280, 720, "Triangles"};
+        const graphics::GlfwLibrary library{};
+        graphics::Window window{library, 1280, 720, "Triangles"};
         std::cout << "OpenGL " << window.opengl_version() << '\n';
 
         const graphics::ShaderProgram shader_program = graphics::create_triangles_shader_program();
