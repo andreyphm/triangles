@@ -411,15 +411,22 @@ Each group is a separate CTest test labeled `e2e`:
 | `e2e_geometry` | intersections of regular triangles |
 | `e2e_degenerate` | points and segments |
 | `e2e_scale` | the same scenarios scaled by `2^±20`, `2^±300` and shifted by `2^20` |
-| `e2e_search` | large scenes with a known answer |
+| `e2e_search` | scenes of up to 8,000 triangles with a known answer |
 | `e2e_input` | input format and input errors |
 | `e2e_visualizer_arguments` | invalid arguments to `triangles` |
 | `e2e_generator` | the scene generator |
+| `e2e_large_*` | random scenes of 100,000 to 999,999 triangles with a known answer |
 
 All e2e tests:
 
 ```bash
 ctest --test-dir build -L e2e
+```
+
+All tests except the large scenes:
+
+```bash
+ctest --test-dir build -LE large
 ```
 
 A single group:
@@ -500,6 +507,7 @@ ctest --test-dir build -R e2e_scale --output-on-failure
 │   ├── CMakeLists.txt                  # registers e2e tests with CTest
 │   ├── common.py                       # building blocks, input encoding, running and checking
 │   ├── cli_e2e.py                      # scenarios for triangles_cli
+│   ├── large_e2e.py                    # large random scenes with a known answer
 │   ├── visualizer_e2e.py               # invalid arguments to triangles
 │   └── generator_e2e.py                # checks for generate_scene.py
 ├── tools/

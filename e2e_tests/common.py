@@ -90,13 +90,15 @@ def encode_marked(flags: Sequence[bool]) -> str:
     return "".join(f"{index}\n" for index, flag in enumerate(flags) if flag)
 
 
-def run_case(binary: Path, case: Case) -> Failure | None:
+def run_case(
+    binary: Path, case: Case, timeout: int = RUN_TIMEOUT_SECONDS
+) -> Failure | None:
     completed = subprocess.run(
         [str(binary), *case.arguments],
         input=case.input_text,
         text=True,
         capture_output=True,
-        timeout=RUN_TIMEOUT_SECONDS,
+        timeout=timeout,
         check=False,
     )
     if isinstance(case.expected_stderr, str):
@@ -119,9 +121,16 @@ def shorten(text: str, limit: int = 400) -> str:
     )
 
 
-def run_cases(binary: Path, group: str, cases: Sequence[Case]) -> int:
+def run_cases(
+    binary: Path,
+    group: str,
+    cases: Sequence[Case],
+    timeout: int = RUN_TIMEOUT_SECONDS,
+) -> int:
     failures = [
-        failure for case in cases if (failure := run_case(binary, case)) is not None
+        failure
+        for case in cases
+        if (failure := run_case(binary, case, timeout)) is not None
     ]
     for failure in failures:
         print(f"FAILED: {failure.case.name}")
