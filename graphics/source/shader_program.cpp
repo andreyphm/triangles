@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <cstddef>
+#include <format>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -39,7 +40,7 @@ std::string program_info_log(GLuint program) {
 ShaderHandle compile_shader(GLenum type, std::string_view source) {
     ShaderHandle shader{glCreateShader(type)};
     if (!shader.get()) {
-        throw std::runtime_error(std::string{"failed to create "} + shader_name(type));
+        throw std::runtime_error(std::format("failed to create {}", shader_name(type)));
     }
 
     const GLchar* const text = source.data();
@@ -51,7 +52,7 @@ ShaderHandle compile_shader(GLenum type, std::string_view source) {
     glGetShaderiv(shader.get(), GL_COMPILE_STATUS, &status);
     if (status == GL_FALSE) {
         const std::string log = shader_info_log(shader.get());
-        throw std::runtime_error(std::string{shader_name(type)} + " compilation failed: " + log);
+        throw std::runtime_error(std::format("{} compilation failed: {}", shader_name(type), log));
     }
 
     return shader;
@@ -74,7 +75,7 @@ ProgramHandle create_program(std::string_view vertex_source, std::string_view fr
     glGetProgramiv(program.get(), GL_LINK_STATUS, &status);
     if (status == GL_FALSE) {
         const std::string log = program_info_log(program.get());
-        throw std::runtime_error("shader program linking failed: " + log);
+        throw std::runtime_error(std::format("shader program linking failed: {}", log));
     }
 
     return program;
@@ -104,7 +105,7 @@ void ShaderProgram::set_uniform(const char* name, const glm::vec3& value) const 
 int ShaderProgram::uniform_location(const char* name) const {
     const GLint location = glGetUniformLocation(id_.get(), name);
     if (location == -1) {
-        throw std::runtime_error(std::string{"unknown shader uniform "} + name);
+        throw std::runtime_error(std::format("unknown shader uniform {}", name));
     }
     return location;
 }

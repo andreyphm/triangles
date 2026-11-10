@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+#include <format>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -186,7 +187,7 @@ TEST(InputReader, accepts_leading_plus_sign) {
 TEST(InputReader, rejects_malformed_coordinate_words) {
     for (const char* coordinate : {"+-1", "++1", "+", "1.5.3", "1x", "0x10", "1e400"}) {
         std::istringstream input{
-            std::string{"1\n0 0 0  1 0 0  0 1 "} + coordinate
+            std::format("1\n0 0 0  1 0 0  0 1 {}", coordinate)
         };
         std::vector<Triangle> triangles;
 
@@ -200,7 +201,7 @@ TEST(InputReader, rejects_malformed_coordinate_words) {
 TEST(InputReader, treats_non_finite_coordinate_as_triangle_read_error) {
     for (const char* coordinate : {"nan", "inf", "-inf"}) {
         std::istringstream input{
-            std::string{"1\n0 0 0  1 0 0  0 1 "} + coordinate
+            std::format("1\n0 0 0  1 0 0  0 1 {}", coordinate)
         };
         std::vector<Triangle> triangles{sample_triangle()};
 

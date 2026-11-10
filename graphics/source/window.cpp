@@ -7,6 +7,7 @@
 
 #include <glm/glm.hpp>
 
+#include <format>
 #include <functional>
 #include <stdexcept>
 #include <string>
@@ -29,8 +30,8 @@ GlfwWindowPtr create_window(int width, int height, const char* title) {
 
     GlfwWindowPtr handle{glfwCreateWindow(width, height, title, nullptr, nullptr)};
     if (!handle) {
-        throw std::runtime_error("failed to create window with OpenGL " + std::to_string(opengl_major_version)
-                                + "." + std::to_string(opengl_minor_version) + " core context");
+        throw std::runtime_error(std::format("failed to create window with OpenGL {}.{} core context",
+                                             opengl_major_version, opengl_minor_version));
     }
 
     glfwMakeContextCurrent(handle.get());

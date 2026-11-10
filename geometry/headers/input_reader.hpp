@@ -8,6 +8,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <format>
 #include <istream>
 #include <optional>
 #include <stdexcept>
@@ -56,10 +57,10 @@ public:
                 return "failed to read triangle count";
 
             case TriangleReadStatus::count_out_of_range:
-                return "triangle count must satisfy 0 < N < " + std::to_string(triangle_count_limit);
+                return std::format("triangle count must satisfy 0 < N < {}", triangle_count_limit);
 
             case TriangleReadStatus::triangle_read_failed:
-                return "failed to read triangle " + std::to_string(triangle_number_.value());
+                return std::format("failed to read triangle {}", triangle_number_.value());
         }
 
         throw std::logic_error("invalid triangle read status");
