@@ -19,7 +19,7 @@ public:
     }
 
     const Point3<T>& vertex(std::size_t index) const & { return vertices_.at(index); }
-    const Point3<T>& vertex(std::size_t index) const && = delete;
+    Point3<T> vertex(std::size_t index) const && { return vertices_.at(index); }
 
     Vector3<T> edge(std::size_t index) const {
         if (index >= vertex_count_) {

@@ -21,9 +21,9 @@ public:
               std::max({triangle.vertex(0).z, triangle.vertex(1).z, triangle.vertex(2).z})) {}
 
     const Point3<T>& min_point() const & { return min_; }
-    const Point3<T>& min_point() const && = delete;
+    Point3<T> min_point() const && { return min_; }
     const Point3<T>& max_point() const & { return max_; }
-    const Point3<T>& max_point() const && = delete;
+    Point3<T> max_point() const && { return max_; }
 
     bool overlaps(const BoundingBox& other) const {
         return (min_.x <= other.max_.x && other.min_.x <= max_.x
