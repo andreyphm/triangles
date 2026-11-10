@@ -1,14 +1,18 @@
 #include "triangle.hpp"
 
+#include "floating_types.hpp"
+
 #include <gtest/gtest.h>
 
 #include <limits>
 #include <stdexcept>
 
-using Triangle = geometry::Triangle<double>;
-using Vector3 = geometry::Vector3<double>;
+template <typename T> class TriangleTest : public ::testing::Test {};
+TYPED_TEST_SUITE(TriangleTest, geometry_tests::FloatingTypes, geometry_tests::FloatingTypeNames);
 
-TEST(Triangle, stores_vertices_in_constructor_order) {
+TYPED_TEST(TriangleTest, stores_vertices_in_constructor_order) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Vector3 first{1.0, 2.0, 3.0};
     const Vector3 second{4.0, 5.0, 6.0};
     const Vector3 third{7.0, 8.0, 9.0};
@@ -19,19 +23,26 @@ TEST(Triangle, stores_vertices_in_constructor_order) {
     EXPECT_EQ(triangle.vertex(2), third);
 }
 
-TEST(Triangle, rejects_nonfinite_vertex) {
-    const double infinity = std::numeric_limits<double>::infinity();
+TYPED_TEST(TriangleTest, rejects_nonfinite_vertex) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
+    const TypeParam infinity = std::numeric_limits<TypeParam>::infinity();
+    const TypeParam zero{0.0};
 
-    EXPECT_THROW(Triangle(Vector3(), Vector3(infinity, 0.0, 0.0), Vector3()), std::invalid_argument);
+    EXPECT_THROW(Triangle(Vector3(), Vector3(infinity, zero, zero), Vector3()), std::invalid_argument);
 }
 
-TEST(Triangle, rejects_vertex_index_out_of_range) {
+TYPED_TEST(TriangleTest, rejects_vertex_index_out_of_range) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle triangle{Vector3(), Vector3(1.0, 0.0, 0.0), Vector3(0.0, 1.0, 0.0)};
 
     EXPECT_THROW(triangle.vertex(3), std::out_of_range);
 }
 
-TEST(Triangle, returns_cyclic_edges) {
+TYPED_TEST(TriangleTest, returns_cyclic_edges) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle triangle{
         Vector3(1.0, 1.0, 0.0),
         Vector3(4.0, 1.0, 0.0),
@@ -42,13 +53,17 @@ TEST(Triangle, returns_cyclic_edges) {
     EXPECT_EQ(triangle.edge(2), Vector3(0.0, -4.0, 0.0));
 }
 
-TEST(Triangle, rejects_edge_index_out_of_range) {
+TYPED_TEST(TriangleTest, rejects_edge_index_out_of_range) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle triangle{Vector3(), Vector3(1.0, 0.0, 0.0), Vector3(0.0, 1.0, 0.0)};
 
     EXPECT_THROW(triangle.edge(3), std::out_of_range);
 }
 
-TEST(Triangle, calculates_normal_according_to_vertex_order) {
+TYPED_TEST(TriangleTest, calculates_normal_according_to_vertex_order) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle counterclockwise{
         Vector3(),
         Vector3(2.0, 0.0, 0.0),
@@ -62,7 +77,9 @@ TEST(Triangle, calculates_normal_according_to_vertex_order) {
     EXPECT_EQ(clockwise.normal(), Vector3(0.0, 0.0, -6.0));
 }
 
-TEST(Triangle, permits_degenerate_triangle) {
+TYPED_TEST(TriangleTest, permits_degenerate_triangle) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle triangle{
         Vector3(1.0, 1.0, 1.0),
         Vector3(2.0, 2.0, 2.0),

@@ -2,22 +2,24 @@
 
 #include "triangle.hpp"
 
+#include "floating_types.hpp"
+
 #include <gtest/gtest.h>
 
 #include <format>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
 
-using Triangle = geometry::Triangle<double>;
 using geometry::TriangleReadResult;
 using geometry::TriangleReadStatus;
-using Vector3 = geometry::Vector3<double>;
 using geometry::read_triangles;
 
 namespace {
 
-Triangle sample_triangle() {
+template <typename T> geometry::Triangle<T> sample_triangle() {
+    using Vector3 = geometry::Vector3<T>;
     return {
         Vector3{10.0, 10.0, 10.0},
         Vector3{11.0, 10.0, 10.0},
@@ -26,7 +28,12 @@ Triangle sample_triangle() {
 
 }
 
-TEST(InputReader, reads_complete_triangle_set) {
+template <typename T> class InputReaderTest : public ::testing::Test {};
+TYPED_TEST_SUITE(InputReaderTest, geometry_tests::FloatingTypes, geometry_tests::FloatingTypeNames);
+
+TYPED_TEST(InputReaderTest, reads_complete_triangle_set) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     std::istringstream input{
         "2\n"
         "0 0 0  1 0 0  0 1 0\n"
@@ -44,7 +51,9 @@ TEST(InputReader, reads_complete_triangle_set) {
     EXPECT_EQ(triangles[1].vertex(1), Vector3(5.0, 6.0, 7.0));
 }
 
-TEST(InputReader, reads_single_triangle_independently_of_line_breaks) {
+TYPED_TEST(InputReaderTest, reads_single_triangle_independently_of_line_breaks) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     std::istringstream input{
         "1\n"
         "0 0\n"
@@ -61,7 +70,9 @@ TEST(InputReader, reads_single_triangle_independently_of_line_breaks) {
     EXPECT_EQ(triangles[0].vertex(2), Vector3(0.0, 1.0, 0.0));
 }
 
-TEST(InputReader, reads_windows_line_endings_and_tabs) {
+TYPED_TEST(InputReaderTest, reads_windows_line_endings_and_tabs) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     std::istringstream input{
         "2\r\n"
         "0\t0\t0  1 0 0\r\n"
@@ -77,7 +88,8 @@ TEST(InputReader, reads_windows_line_endings_and_tabs) {
     EXPECT_EQ(triangles[1].vertex(2), Vector3(3.0, 3.0, 4.0));
 }
 
-TEST(InputReader, ignores_data_after_last_triangle) {
+TYPED_TEST(InputReaderTest, ignores_data_after_last_triangle) {
+    using Triangle = geometry::Triangle<TypeParam>;
     std::istringstream input{"1\n0 0 0  1 0 0  0 1 0\nnot part of the input 42\n"};
     std::vector<Triangle> triangles;
 
@@ -87,9 +99,11 @@ TEST(InputReader, ignores_data_after_last_triangle) {
     EXPECT_EQ(triangles.size(), 1);
 }
 
-TEST(InputReader, replaces_existing_output_after_success) {
+TYPED_TEST(InputReaderTest, replaces_existing_output_after_success) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     std::istringstream input{"1\n0 0 0  1 0 0  0 1 0\n"};
-    std::vector<Triangle> triangles{sample_triangle()};
+    std::vector<Triangle> triangles{sample_triangle<TypeParam>()};
 
     const TriangleReadResult result = read_triangles(input, triangles);
 
@@ -98,7 +112,8 @@ TEST(InputReader, replaces_existing_output_after_success) {
     EXPECT_EQ(triangles[0].vertex(0), Vector3(0.0, 0.0, 0.0));
 }
 
-TEST(InputReader, rejects_missing_triangle_count) {
+TYPED_TEST(InputReaderTest, rejects_missing_triangle_count) {
+    using Triangle = geometry::Triangle<TypeParam>;
     std::istringstream input{"not-a-number"};
     std::vector<Triangle> triangles;
 
@@ -109,7 +124,8 @@ TEST(InputReader, rejects_missing_triangle_count) {
     EXPECT_TRUE(triangles.empty());
 }
 
-TEST(InputReader, rejects_triangle_count_followed_by_non_space) {
+TYPED_TEST(InputReaderTest, rejects_triangle_count_followed_by_non_space) {
+    using Triangle = geometry::Triangle<TypeParam>;
     for (const char* text : {"1.5\n0 0 0  1 0 0  0 1 0\n", "1x\n0 0 0  1 0 0  0 1 0\n"}) {
         std::istringstream input{text};
         std::vector<Triangle> triangles;
@@ -122,7 +138,8 @@ TEST(InputReader, rejects_triangle_count_followed_by_non_space) {
     }
 }
 
-TEST(InputReader, rejects_triangle_count_in_exponent_notation) {
+TYPED_TEST(InputReaderTest, rejects_triangle_count_in_exponent_notation) {
+    using Triangle = geometry::Triangle<TypeParam>;
     std::istringstream input{"1e0\n0 0 0  1 0 0  0 1 0\n"};
     std::vector<Triangle> triangles;
 
@@ -131,7 +148,8 @@ TEST(InputReader, rejects_triangle_count_in_exponent_notation) {
     EXPECT_EQ(result.status(), TriangleReadStatus::count_read_failed);
 }
 
-TEST(InputReader, rejects_triangle_count_out_of_range) {
+TYPED_TEST(InputReaderTest, rejects_triangle_count_out_of_range) {
+    using Triangle = geometry::Triangle<TypeParam>;
     for (const char* text : {"0", "-1", "1000000"}) {
         std::istringstream input{text};
         std::vector<Triangle> triangles;
@@ -144,7 +162,8 @@ TEST(InputReader, rejects_triangle_count_out_of_range) {
     }
 }
 
-TEST(InputReader, reports_incomplete_triangle_number) {
+TYPED_TEST(InputReaderTest, reports_incomplete_triangle_number) {
+    using Triangle = geometry::Triangle<TypeParam>;
     std::istringstream input{
         "2\n"
         "0 0 0  1 0 0  0 1 0\n"
@@ -158,7 +177,8 @@ TEST(InputReader, reports_incomplete_triangle_number) {
     EXPECT_TRUE(triangles.empty());
 }
 
-TEST(InputReader, reports_triangle_with_non_numeric_coordinate) {
+TYPED_TEST(InputReaderTest, reports_triangle_with_non_numeric_coordinate) {
+    using Triangle = geometry::Triangle<TypeParam>;
     std::istringstream input{
         "2\n"
         "0 0 0  1 0 0  0 1 0\n"
@@ -172,7 +192,9 @@ TEST(InputReader, reports_triangle_with_non_numeric_coordinate) {
     EXPECT_TRUE(triangles.empty());
 }
 
-TEST(InputReader, accepts_leading_plus_sign) {
+TYPED_TEST(InputReaderTest, accepts_leading_plus_sign) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     std::istringstream input{"+1\n+0 0 0  +1.5 0 0  0 +1e1 0\n"};
     std::vector<Triangle> triangles;
 
@@ -184,8 +206,9 @@ TEST(InputReader, accepts_leading_plus_sign) {
     EXPECT_EQ(triangles[0].vertex(2), Vector3(0.0, 10.0, 0.0));
 }
 
-TEST(InputReader, rejects_malformed_coordinate_words) {
-    for (const char* coordinate : {"+-1", "++1", "+", "1.5.3", "1x", "0x10", "1e400"}) {
+TYPED_TEST(InputReaderTest, rejects_malformed_coordinate_words) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    for (const char* coordinate : {"+-1", "++1", "+", "1.5.3", "1x", "0x10"}) {
         std::istringstream input{
             std::format("1\n0 0 0  1 0 0  0 1 {}", coordinate)
         };
@@ -198,12 +221,26 @@ TEST(InputReader, rejects_malformed_coordinate_words) {
     }
 }
 
-TEST(InputReader, treats_non_finite_coordinate_as_triangle_read_error) {
+TYPED_TEST(InputReaderTest, rejects_coordinate_overflowing_the_type) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    const int overflowing_exponent = std::numeric_limits<TypeParam>::max_exponent10 + 1;
+    std::istringstream input{std::format("1\n0 0 0  1 0 0  0 1 1e{}", overflowing_exponent)};
+    std::vector<Triangle> triangles;
+
+    const TriangleReadResult result = read_triangles(input, triangles);
+
+    EXPECT_EQ(result.status(), TriangleReadStatus::triangle_read_failed);
+    EXPECT_EQ(result.triangle_number(), 1);
+}
+
+TYPED_TEST(InputReaderTest, treats_non_finite_coordinate_as_triangle_read_error) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     for (const char* coordinate : {"nan", "inf", "-inf"}) {
         std::istringstream input{
             std::format("1\n0 0 0  1 0 0  0 1 {}", coordinate)
         };
-        std::vector<Triangle> triangles{sample_triangle()};
+        std::vector<Triangle> triangles{sample_triangle<TypeParam>()};
 
         const TriangleReadResult result = read_triangles(input, triangles);
 
@@ -214,9 +251,11 @@ TEST(InputReader, treats_non_finite_coordinate_as_triangle_read_error) {
     }
 }
 
-TEST(InputReader, leaves_output_unchanged_after_error) {
+TYPED_TEST(InputReaderTest, leaves_output_unchanged_after_error) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     std::istringstream input{"1\n0 0 0 1 0 0"};
-    std::vector<Triangle> triangles{sample_triangle()};
+    std::vector<Triangle> triangles{sample_triangle<TypeParam>()};
 
     const TriangleReadResult result = read_triangles(input, triangles);
 
@@ -225,9 +264,11 @@ TEST(InputReader, leaves_output_unchanged_after_error) {
     EXPECT_EQ(triangles[0].vertex(0), Vector3(10.0, 10.0, 10.0));
 }
 
-TEST(InputReader, leaves_output_unchanged_after_count_error) {
+TYPED_TEST(InputReaderTest, leaves_output_unchanged_after_count_error) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     std::istringstream input{"not-a-number"};
-    std::vector<Triangle> triangles{sample_triangle()};
+    std::vector<Triangle> triangles{sample_triangle<TypeParam>()};
 
     const TriangleReadResult result = read_triangles(input, triangles);
 

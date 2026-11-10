@@ -1,5 +1,7 @@
 #include "robust_predicates.hpp"
 
+#include "floating_types.hpp"
+
 #include <gtest/gtest.h>
 
 #include <array>
@@ -10,8 +12,6 @@
 #include <stdexcept>
 
 using geometry::PredicateSign;
-using Vector2 = geometry::Vector2<double>;
-using Vector3 = geometry::Vector3<double>;
 using geometry::orient2d;
 using geometry::orient3d;
 
@@ -37,9 +37,17 @@ PredicateSign opposite(PredicateSign sign) {
     return PredicateSign::zero;
 }
 
+template <typename T> int scaling_exponent_limit() {
+    return std::numeric_limits<T>::max_exponent * 3 / 10;
+}
+
 } // namespace
 
-TEST(Predicates, orient2d_returns_expected_sign) {
+template <typename T> class PredicatesTest : public ::testing::Test {};
+TYPED_TEST_SUITE(PredicatesTest, geometry_tests::FloatingTypes, geometry_tests::FloatingTypeNames);
+
+TYPED_TEST(PredicatesTest, orient2d_returns_expected_sign) {
+    using Vector2 = geometry::Vector2<TypeParam>;
     const Vector2 first{0.0, 0.0};
     const Vector2 second{2.0, 0.0};
     const Vector2 third{1.0, 1.0};
@@ -49,21 +57,24 @@ TEST(Predicates, orient2d_returns_expected_sign) {
     EXPECT_EQ(orient2d(first, second, Vector2(1.0, 0.0)), PredicateSign::zero);
 }
 
-TEST(Predicates, orient2d_resolves_rounded_determinant) {
-    const double above_one = std::nextafter(1.0, 2.0);
-    const double below_one = std::nextafter(1.0, 0.0);
-    const Vector2 first{above_one, 1.0};
-    const Vector2 second{1.0, below_one};
+TYPED_TEST(PredicatesTest, orient2d_resolves_rounded_determinant) {
+    using Vector2 = geometry::Vector2<TypeParam>;
+    const TypeParam one{1.0};
+    const TypeParam above_one = std::nextafter(one, TypeParam{2.0});
+    const TypeParam below_one = std::nextafter(one, TypeParam{0.0});
+    const Vector2 first{above_one, one};
+    const Vector2 second{one, below_one};
     const Vector2 third{0.0, 0.0};
 
-    const double rounded_determinant = first.x * second.y - first.y * second.x;
+    const TypeParam rounded_determinant = first.x * second.y - first.y * second.x;
     ASSERT_EQ(rounded_determinant, 0.0);
     EXPECT_EQ(orient2d(first, second, third), PredicateSign::positive);
     EXPECT_EQ(orient2d(second, first, third), PredicateSign::negative);
 
-    for (int exponent = -300; exponent <= 300; exponent += 30) {
+    const int limit = scaling_exponent_limit<TypeParam>();
+    for (int exponent = -limit; exponent <= limit; exponent += limit / 10) {
         SCOPED_TRACE(exponent);
-        const double scale = std::ldexp(1.0, exponent);
+        const TypeParam scale = std::ldexp(one, exponent);
         EXPECT_EQ(orient2d(
                 Vector2(first.x * scale, first.y * scale),
                 Vector2(second.x * scale, second.y * scale),
@@ -72,7 +83,8 @@ TEST(Predicates, orient2d_resolves_rounded_determinant) {
     }
 }
 
-TEST(Predicates, orient2d_is_zero_for_repeated_and_collinear_points) {
+TYPED_TEST(PredicatesTest, orient2d_is_zero_for_repeated_and_collinear_points) {
+    using Vector2 = geometry::Vector2<TypeParam>;
     const Vector2 first{-4.0, -7.0};
     const Vector2 second{2.0, 5.0};
     const Vector2 third{8.0, 17.0};
@@ -81,7 +93,8 @@ TEST(Predicates, orient2d_is_zero_for_repeated_and_collinear_points) {
     EXPECT_EQ(orient2d(first, second, third), PredicateSign::zero);
 }
 
-TEST(Predicates, orient2d_preserves_sign_under_cyclic_permutations) {
+TYPED_TEST(PredicatesTest, orient2d_preserves_sign_under_cyclic_permutations) {
+    using Vector2 = geometry::Vector2<TypeParam>;
     const Vector2 first{-3.0, 2.0};
     const Vector2 second{5.0, -1.0};
     const Vector2 third{4.0, 7.0};
@@ -94,27 +107,32 @@ TEST(Predicates, orient2d_preserves_sign_under_cyclic_permutations) {
     EXPECT_EQ(orient2d(first, third, second), opposite(sign));
 }
 
-TEST(Predicates, orient2d_preserves_sign_under_translation_and_scaling) {
+TYPED_TEST(PredicatesTest, orient2d_preserves_sign_under_translation_and_scaling) {
+    using Vector2 = geometry::Vector2<TypeParam>;
     const Vector2 first{-3.0, 2.0};
     const Vector2 second{5.0, -1.0};
     const Vector2 third{4.0, 7.0};
     const PredicateSign sign = orient2d(first, second, third);
+    const TypeParam shift_x{1024.0};
+    const TypeParam shift_y{2048.0};
+    const TypeParam factor{0x1p-40};
 
     EXPECT_EQ(
         orient2d(
-            Vector2(first.x + 1024.0, first.y - 2048.0),
-            Vector2(second.x + 1024.0, second.y - 2048.0),
-            Vector2(third.x + 1024.0, third.y - 2048.0)),
+            Vector2(first.x + shift_x, first.y - shift_y),
+            Vector2(second.x + shift_x, second.y - shift_y),
+            Vector2(third.x + shift_x, third.y - shift_y)),
         sign);
     EXPECT_EQ(
         orient2d(
-            Vector2(first.x * 0x1p-40, first.y * 0x1p-40),
-            Vector2(second.x * 0x1p-40, second.y * 0x1p-40),
-            Vector2(third.x * 0x1p-40, third.y * 0x1p-40)),
+            Vector2(first.x * factor, first.y * factor),
+            Vector2(second.x * factor, second.y * factor),
+            Vector2(third.x * factor, third.y * factor)),
         sign);
 }
 
-TEST(Predicates, orient2d_matches_exact_integer_determinants) {
+TYPED_TEST(PredicatesTest, orient2d_matches_exact_integer_determinants) {
+    using Vector2 = geometry::Vector2<TypeParam>;
     std::mt19937 generator{0x8a5cd789U};
     std::uniform_int_distribution<std::int64_t> coordinate{-1'000'000, 1'000'000};
 
@@ -129,14 +147,15 @@ TEST(Predicates, orient2d_matches_exact_integer_determinants) {
 
         EXPECT_EQ(
             orient2d(
-                Vector2(static_cast<double>(first_x),  static_cast<double>(first_y)),
-                Vector2(static_cast<double>(second_x), static_cast<double>(second_y)),
-                Vector2(static_cast<double>(third_x),  static_cast<double>(third_y))),
+                Vector2(static_cast<TypeParam>(first_x),  static_cast<TypeParam>(first_y)),
+                Vector2(static_cast<TypeParam>(second_x), static_cast<TypeParam>(second_y)),
+                Vector2(static_cast<TypeParam>(third_x),  static_cast<TypeParam>(third_y))),
             sign_of(determinant));
     }
 }
 
-TEST(Predicates, orient3d_returns_expected_sign) {
+TYPED_TEST(PredicatesTest, orient3d_returns_expected_sign) {
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Vector3 first{0.0, 0.0, 0.0};
     const Vector3 second{1.0, 0.0, 0.0};
     const Vector3 third{0.0, 1.0, 0.0};
@@ -148,26 +167,31 @@ TEST(Predicates, orient3d_returns_expected_sign) {
     EXPECT_EQ(orient3d(first, second, third, coplanar), PredicateSign::zero);
 }
 
-TEST(Predicates, orient3d_resolves_rounded_determinant) {
-    const double above_one = std::nextafter(1.0, 2.0);
-    const double below_one = std::nextafter(1.0, 0.0);
-    const Vector3 first{above_one, 1.0, 0.0};
-    const Vector3 second{1.0, below_one, 0.0};
+TYPED_TEST(PredicatesTest, orient3d_resolves_rounded_determinant) {
+    using Vector3 = geometry::Vector3<TypeParam>;
+    const TypeParam one{1.0};
+    const TypeParam zero{0.0};
+    const TypeParam above_one = std::nextafter(one, TypeParam{2.0});
+    const TypeParam below_one = std::nextafter(one, zero);
+    const Vector3 first{above_one, one, zero};
+    const Vector3 second{one, below_one, zero};
     const Vector3 third{0.0, 0.0, 0.0};
     const Vector3 fourth{0.0, 0.0, 1.0};
 
-    const double rounded_minor = first.x * second.y - first.y * second.x;
+    const TypeParam rounded_minor = first.x * second.y - first.y * second.x;
     ASSERT_EQ(rounded_minor, 0.0);
     EXPECT_EQ(orient3d(first, second, third, fourth), PredicateSign::negative);
 
-    for (int exponent = -300; exponent <= 300; exponent += 30) {
+    const int limit = scaling_exponent_limit<TypeParam>();
+    for (int exponent = -limit; exponent <= limit; exponent += limit / 10) {
         SCOPED_TRACE(exponent);
-        const double scale = std::ldexp(1.0, exponent);
+        const TypeParam scale = std::ldexp(one, exponent);
         EXPECT_EQ(orient3d(first * scale, second * scale, third, fourth * scale), PredicateSign::negative);
     }
 }
 
-TEST(Predicates, orient3d_is_zero_for_repeated_and_coplanar_points) {
+TYPED_TEST(PredicatesTest, orient3d_is_zero_for_repeated_and_coplanar_points) {
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Vector3 first{0.0, 0.0, 3.0};
     const Vector3 second{2.0, 0.0, 7.0};
     const Vector3 third{0.0, 2.0, 9.0};
@@ -177,7 +201,8 @@ TEST(Predicates, orient3d_is_zero_for_repeated_and_coplanar_points) {
     EXPECT_EQ(orient3d(first, second, third, coplanar), PredicateSign::zero);
 }
 
-TEST(Predicates, orient3d_changes_sign_for_odd_permutations) {
+TYPED_TEST(PredicatesTest, orient3d_changes_sign_for_odd_permutations) {
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Vector3 first{-2.0, 1.0, 3.0};
     const Vector3 second{4.0, -1.0, 2.0};
     const Vector3 third{1.0, 5.0, -2.0};
@@ -191,31 +216,23 @@ TEST(Predicates, orient3d_changes_sign_for_odd_permutations) {
     EXPECT_EQ(orient3d(second, third, first, fourth), sign);
 }
 
-TEST(Predicates, orient3d_preserves_sign_under_translation_and_scaling) {
+TYPED_TEST(PredicatesTest, orient3d_preserves_sign_under_translation_and_scaling) {
+    using Vector3 = geometry::Vector3<TypeParam>;
     const std::array<Vector3, 4> points{
         Vector3(-2.0, 1.0, 3.0),
         Vector3(4.0, -1.0, 2.0),
         Vector3(1.0, 5.0, -2.0),
         Vector3(3.0, 2.0, 7.0)};
     const PredicateSign sign = orient3d(points[0], points[1], points[2], points[3]);
+    const Vector3 shift{1024.0, -2048.0, 4096.0};
+    const TypeParam factor{0x1p-30};
 
-    EXPECT_EQ(
-        orient3d(
-            Vector3(points[0].x + 1024.0, points[0].y - 2048.0, points[0].z + 4096.0),
-            Vector3(points[1].x + 1024.0, points[1].y - 2048.0, points[1].z + 4096.0),
-            Vector3(points[2].x + 1024.0, points[2].y - 2048.0, points[2].z + 4096.0),
-            Vector3(points[3].x + 1024.0, points[3].y - 2048.0, points[3].z + 4096.0)),
-        sign);
-    EXPECT_EQ(
-        orient3d(
-            points[0] * 0x1p-30,
-            points[1] * 0x1p-30,
-            points[2] * 0x1p-30,
-            points[3] * 0x1p-30),
-        sign);
+    EXPECT_EQ(orient3d(points[0] + shift, points[1] + shift, points[2] + shift, points[3] + shift), sign);
+    EXPECT_EQ(orient3d(points[0] * factor, points[1] * factor, points[2] * factor, points[3] * factor), sign);
 }
 
-TEST(Predicates, orient3d_matches_exact_integer_determinants) {
+TYPED_TEST(PredicatesTest, orient3d_matches_exact_integer_determinants) {
+    using Vector3 = geometry::Vector3<TypeParam>;
     std::mt19937 generator{0xd1b54a35U};
     std::uniform_int_distribution<std::int64_t> coordinate{-10'000, 10'000};
 
@@ -241,48 +258,41 @@ TEST(Predicates, orient3d_matches_exact_integer_determinants) {
             - second_z * (first_x  * third_y  - third_x  * first_y)
             + third_z  * (first_x  * second_y - second_x * first_y);
 
+        const auto as_point = [](const std::array<std::int64_t, 3>& point) {
+            return Vector3(
+                static_cast<TypeParam>(point[0]),
+                static_cast<TypeParam>(point[1]),
+                static_cast<TypeParam>(point[2]));
+        };
         EXPECT_EQ(
-            orient3d(
-                Vector3(
-                    static_cast<double>(points[0][0]),
-                    static_cast<double>(points[0][1]),
-                    static_cast<double>(points[0][2])),
-                Vector3(
-                    static_cast<double>(points[1][0]),
-                    static_cast<double>(points[1][1]),
-                    static_cast<double>(points[1][2])),
-                Vector3(
-                    static_cast<double>(points[2][0]),
-                    static_cast<double>(points[2][1]),
-                    static_cast<double>(points[2][2])),
-                Vector3(
-                    static_cast<double>(points[3][0]),
-                    static_cast<double>(points[3][1]),
-                    static_cast<double>(points[3][2]))),
+            orient3d(as_point(points[0]), as_point(points[1]), as_point(points[2]), as_point(points[3])),
             sign_of(determinant));
     }
 }
 
-TEST(Predicates, reject_nonfinite_coordinates) {
-    const double infinity = std::numeric_limits<double>::infinity();
-    const double not_a_number = std::numeric_limits<double>::quiet_NaN();
+TYPED_TEST(PredicatesTest, reject_nonfinite_coordinates) {
+    using Vector2 = geometry::Vector2<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
+    const TypeParam infinity = std::numeric_limits<TypeParam>::infinity();
+    const TypeParam not_a_number = std::numeric_limits<TypeParam>::quiet_NaN();
+    const TypeParam zero{0.0};
 
     EXPECT_THROW(
-        orient2d(Vector2(), Vector2(infinity, 0.0), Vector2()),
+        orient2d(Vector2(), Vector2(infinity, zero), Vector2()),
         std::invalid_argument);
     EXPECT_THROW(
-        orient2d(Vector2(), Vector2(), Vector2(0.0, not_a_number)),
+        orient2d(Vector2(), Vector2(), Vector2(zero, not_a_number)),
         std::invalid_argument);
     EXPECT_THROW(
         orient3d(
             Vector3(),
             Vector3(1.0, 0.0, 0.0),
             Vector3(0.0, 1.0, 0.0),
-            Vector3(0.0, 0.0, infinity)),
+            Vector3(zero, zero, infinity)),
         std::invalid_argument);
     EXPECT_THROW(
         orient3d(
-            Vector3(not_a_number, 0.0, 0.0),
+            Vector3(not_a_number, zero, zero),
             Vector3(1.0, 0.0, 0.0),
             Vector3(0.0, 1.0, 0.0),
             Vector3()),

@@ -3,6 +3,8 @@
 #include "bounding_box.hpp"
 #include "triangle.hpp"
 
+#include "floating_types.hpp"
+
 #include <gtest/gtest.h>
 
 #include <cstddef>
@@ -10,21 +12,19 @@
 #include <limits>
 #include <vector>
 
-using BoundingBox = geometry::BoundingBox<double>;
 using geometry::CellRange;
-using Triangle = geometry::Triangle<double>;
-using UniformGrid = geometry::UniformGrid<double>;
-using Vector3 = geometry::Vector3<double>;
 
 namespace {
 
 constexpr std::int64_t max_cell_index = (std::int64_t{1} << 21) - 1;
 
-BoundingBox box_at(double x, double y, double z, double size) {
-    return BoundingBox(Triangle{
-        Vector3{x, y, z},
-        Vector3{x + size, y, z},
-        Vector3{x, y + size, z + size}});
+template <typename T> geometry::BoundingBox<T> box_at(double x, double y, double z, double size) {
+    using Vector3 = geometry::Vector3<T>;
+    const auto at = [](double value) { return static_cast<T>(value); };
+    return geometry::BoundingBox<T>(geometry::Triangle<T>{
+        Vector3{at(x), at(y), at(z)},
+        Vector3{at(x + size), at(y), at(z)},
+        Vector3{at(x), at(y + size), at(z + size)}});
 }
 
 bool ranges_share_cell(const CellRange& first, const CellRange& second) {
@@ -46,26 +46,43 @@ double covered_cell_count(const CellRange& range) {
 
 }
 
-TEST(UniformGrid, gives_touching_boxes_a_common_cell) {
-    const std::vector<BoundingBox> boxes{box_at(0.0, 0.0, 0.0, 1.0), box_at(1.0, 0.3, 0.2, 1.0)};
+template <typename T> class UniformGridTest : public ::testing::Test {};
+TYPED_TEST_SUITE(UniformGridTest, geometry_tests::FloatingTypes, geometry_tests::FloatingTypeNames);
+
+TYPED_TEST(UniformGridTest, gives_touching_boxes_a_common_cell) {
+    using BoundingBox = geometry::BoundingBox<TypeParam>;
+    using UniformGrid = geometry::UniformGrid<TypeParam>;
+    const std::vector<BoundingBox> boxes{
+        box_at<TypeParam>(0.0, 0.0, 0.0, 1.0),
+        box_at<TypeParam>(1.0, 0.3, 0.2, 1.0)};
     const UniformGrid grid(boxes);
 
     EXPECT_TRUE(ranges_share_cell(grid.cell_range(boxes[0]), grid.cell_range(boxes[1])));
 }
 
-TEST(UniformGrid, separates_distant_small_boxes) {
-    const std::vector<BoundingBox> boxes{box_at(0.0, 0.0, 0.0, 1.0), box_at(10.0, 0.0, 0.0, 1.0)};
+TYPED_TEST(UniformGridTest, separates_distant_small_boxes) {
+    using BoundingBox = geometry::BoundingBox<TypeParam>;
+    using UniformGrid = geometry::UniformGrid<TypeParam>;
+    const std::vector<BoundingBox> boxes{
+        box_at<TypeParam>(0.0, 0.0, 0.0, 1.0),
+        box_at<TypeParam>(10.0, 0.0, 0.0, 1.0)};
     const UniformGrid grid(boxes);
 
     EXPECT_FALSE(ranges_share_cell(grid.cell_range(boxes[0]), grid.cell_range(boxes[1])));
 }
 
-TEST(UniformGrid, keeps_cell_indices_in_range_for_extreme_coordinates) {
-    const double extreme = std::numeric_limits<double>::max();
+TYPED_TEST(UniformGridTest, keeps_cell_indices_in_range_for_extreme_coordinates) {
+    using BoundingBox = geometry::BoundingBox<TypeParam>;
+    using Triangle = geometry::Triangle<TypeParam>;
+    using UniformGrid = geometry::UniformGrid<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
+    const TypeParam extreme = std::numeric_limits<TypeParam>::max();
+    const Vector3 lowest{-extreme, -extreme, -extreme};
+    const Vector3 highest{extreme, extreme, extreme};
     const std::vector<BoundingBox> boxes{
-        BoundingBox(Triangle{Vector3{-extreme, -extreme, -extreme}, Vector3{-extreme, -extreme, -extreme}, Vector3{-extreme, -extreme, -extreme}}),
-        BoundingBox(Triangle{Vector3{extreme, extreme, extreme}, Vector3{extreme, extreme, extreme}, Vector3{extreme, extreme, extreme}}),
-        box_at(0.0, 0.0, 0.0, 1.0)};
+        BoundingBox(Triangle{lowest, lowest, lowest}),
+        BoundingBox(Triangle{highest, highest, highest}),
+        box_at<TypeParam>(0.0, 0.0, 0.0, 1.0)};
     const UniformGrid grid(boxes);
 
     for (const BoundingBox& box : boxes) {
@@ -77,12 +94,14 @@ TEST(UniformGrid, keeps_cell_indices_in_range_for_extreme_coordinates) {
     }
 }
 
-TEST(UniformGrid, limits_covered_cells_when_one_box_is_huge) {
+TYPED_TEST(UniformGridTest, limits_covered_cells_when_one_box_is_huge) {
+    using BoundingBox = geometry::BoundingBox<TypeParam>;
+    using UniformGrid = geometry::UniformGrid<TypeParam>;
     std::vector<BoundingBox> boxes;
     for (int index = 0; index < 1000; ++index) {
-        boxes.push_back(box_at(index * 0.01, 0.0, 0.0, 0.001));
+        boxes.push_back(box_at<TypeParam>(index * 0.01, 0.0, 0.0, 0.001));
     }
-    boxes.push_back(box_at(-1000.0, -1000.0, -1000.0, 2000.0));
+    boxes.push_back(box_at<TypeParam>(-1000.0, -1000.0, -1000.0, 2000.0));
     const UniformGrid grid(boxes);
 
     double total = 0.0;
@@ -98,10 +117,12 @@ TEST(UniformGrid, gives_different_keys_to_different_cells) {
     EXPECT_NE(geometry::cell_key({max_cell_index, 0, 0}), geometry::cell_key({0, max_cell_index, max_cell_index}));
 }
 
-TEST(UniformGrid, accepts_empty_scene) {
+TYPED_TEST(UniformGridTest, accepts_empty_scene) {
+    using BoundingBox = geometry::BoundingBox<TypeParam>;
+    using UniformGrid = geometry::UniformGrid<TypeParam>;
     const std::vector<BoundingBox> boxes;
     const UniformGrid grid(boxes);
 
-    const CellRange range = grid.cell_range(box_at(0.0, 0.0, 0.0, 1.0));
+    const CellRange range = grid.cell_range(box_at<TypeParam>(0.0, 0.0, 0.0, 1.0));
     EXPECT_GE(range.min_cell[0], 0);
 }

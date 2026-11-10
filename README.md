@@ -392,7 +392,7 @@ ctest --test-dir build --output-on-failure
 
 ### Unit tests
 
-Written with [GoogleTest](https://github.com/google/googletest). Labels: `geometry`, `scene`, `graphics`:
+Written with [GoogleTest](https://github.com/google/googletest). Geometry tests are typed tests: each one runs for `float`, `double` and `long double`. Labels: `geometry`, `scene`, `graphics`:
 
 ```bash
 ctest --test-dir build -L geometry

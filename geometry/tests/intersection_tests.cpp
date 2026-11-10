@@ -1,31 +1,37 @@
 #include "intersection.hpp"
 #include "triangle.hpp"
 
+#include "floating_types.hpp"
+
 #include <gtest/gtest.h>
 
 #include <array>
 #include <cmath>
 
-using Triangle = geometry::Triangle<double>;
-using Vector3 = geometry::Vector3<double>;
 using geometry::intersects;
 
 namespace {
 
-void expect_symmetric_intersection(const Triangle& first, const Triangle& second, bool expected) {
+template <typename T>
+void expect_symmetric_intersection(const geometry::Triangle<T>& first, const geometry::Triangle<T>& second,
+                                   bool expected) {
     EXPECT_EQ(intersects(first, second), expected);
     EXPECT_EQ(intersects(second, first), expected);
 }
 
-Triangle point_triangle(const Vector3& point) {
+template <typename T> geometry::Triangle<T> point_triangle(const geometry::Vector3<T>& point) {
     return {point, point, point};
 }
 
-Triangle segment_triangle(const Vector3& first, const Vector3& middle, const Vector3& second) {
+template <typename T>
+geometry::Triangle<T> segment_triangle(const geometry::Vector3<T>& first, const geometry::Vector3<T>& middle,
+                                       const geometry::Vector3<T>& second) {
     return {first, middle, second};
 }
 
-Triangle permuted_triangle(const Triangle& triangle, const std::array<std::size_t, 3>& permutation) {
+template <typename T>
+geometry::Triangle<T> permuted_triangle(const geometry::Triangle<T>& triangle,
+                                        const std::array<std::size_t, 3>& permutation) {
     return {
         triangle.vertex(permutation[0]),
         triangle.vertex(permutation[1]),
@@ -34,7 +40,12 @@ Triangle permuted_triangle(const Triangle& triangle, const std::array<std::size_
 
 } // namespace
 
-TEST(Intersection, rejects_triangles_with_separate_bounding_boxes) {
+template <typename T> class IntersectionTest : public ::testing::Test {};
+TYPED_TEST_SUITE(IntersectionTest, geometry_tests::FloatingTypes, geometry_tests::FloatingTypeNames);
+
+TYPED_TEST(IntersectionTest, rejects_triangles_with_separate_bounding_boxes) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle first{
         Vector3(0.0, 0.0, 0.0),
         Vector3(1.0, 0.0, 0.0),
@@ -47,7 +58,9 @@ TEST(Intersection, rejects_triangles_with_separate_bounding_boxes) {
     expect_symmetric_intersection(first, second, false);
 }
 
-TEST(Intersection, detects_overlapping_coplanar_triangles) {
+TYPED_TEST(IntersectionTest, detects_overlapping_coplanar_triangles) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle first{
         Vector3(0.0, 0.0, 0.0),
         Vector3(3.0, 0.0, 0.0),
@@ -60,7 +73,9 @@ TEST(Intersection, detects_overlapping_coplanar_triangles) {
     expect_symmetric_intersection(first, second, true);
 }
 
-TEST(Intersection, rejects_disjoint_coplanar_triangles_with_overlapping_bounds) {
+TYPED_TEST(IntersectionTest, rejects_disjoint_coplanar_triangles_with_overlapping_bounds) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle first{
         Vector3(0.0, 0.0, 0.0),
         Vector3(2.0, 0.0, 0.0),
@@ -73,7 +88,9 @@ TEST(Intersection, rejects_disjoint_coplanar_triangles_with_overlapping_bounds) 
     expect_symmetric_intersection(first, second, false);
 }
 
-TEST(Intersection, treats_shared_coplanar_vertex_as_intersection) {
+TYPED_TEST(IntersectionTest, treats_shared_coplanar_vertex_as_intersection) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle first{
         Vector3(0.0, 0.0, 0.0),
         Vector3(2.0, 0.0, 0.0),
@@ -86,7 +103,9 @@ TEST(Intersection, treats_shared_coplanar_vertex_as_intersection) {
     expect_symmetric_intersection(first, second, true);
 }
 
-TEST(Intersection, rejects_triangles_in_separate_parallel_planes) {
+TYPED_TEST(IntersectionTest, rejects_triangles_in_separate_parallel_planes) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle first{
         Vector3(0.0, 0.0, 0.0),
         Vector3(3.0, 0.0, 0.0),
@@ -99,7 +118,9 @@ TEST(Intersection, rejects_triangles_in_separate_parallel_planes) {
     expect_symmetric_intersection(first, second, false);
 }
 
-TEST(Intersection, detects_non_coplanar_triangle_intersection) {
+TYPED_TEST(IntersectionTest, detects_non_coplanar_triangle_intersection) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle horizontal{
         Vector3(0.0, 0.0, 0.0),
         Vector3(4.0, 0.0, 0.0),
@@ -112,7 +133,9 @@ TEST(Intersection, detects_non_coplanar_triangle_intersection) {
     expect_symmetric_intersection(horizontal, vertical, true);
 }
 
-TEST(Intersection, handles_point_combinations) {
+TYPED_TEST(IntersectionTest, handles_point_combinations) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle area{
         Vector3(0.0, 0.0, 0.0),
         Vector3(4.0, 0.0, 0.0),
@@ -127,7 +150,9 @@ TEST(Intersection, handles_point_combinations) {
     expect_symmetric_intersection(inside, outside, false);
 }
 
-TEST(Intersection, handles_point_and_segment) {
+TYPED_TEST(IntersectionTest, handles_point_and_segment) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle segment = segment_triangle(
         Vector3(0.0, 0.0, 0.0),
         Vector3(1.0, 1.0, 1.0),
@@ -139,7 +164,9 @@ TEST(Intersection, handles_point_and_segment) {
     expect_symmetric_intersection(off_segment, segment, false);
 }
 
-TEST(Intersection, handles_segment_combinations) {
+TYPED_TEST(IntersectionTest, handles_segment_combinations) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle horizontal = segment_triangle(
         Vector3(-1.0, 0.0, 0.0),
         Vector3(0.0, 0.0, 0.0),
@@ -162,7 +189,9 @@ TEST(Intersection, handles_segment_combinations) {
     expect_symmetric_intersection(horizontal, collinear_overlap, true);
 }
 
-TEST(Intersection, handles_segment_and_triangle) {
+TYPED_TEST(IntersectionTest, handles_segment_and_triangle) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle area{
         Vector3(0.0, 0.0, 0.0),
         Vector3(4.0, 0.0, 0.0),
@@ -185,7 +214,9 @@ TEST(Intersection, handles_segment_and_triangle) {
     expect_symmetric_intersection(coplanar_crossing, area, true);
 }
 
-TEST(Intersection, handles_point_on_triangle_boundary_and_outside_plane) {
+TYPED_TEST(IntersectionTest, handles_point_on_triangle_boundary_and_outside_plane) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle area{
         Vector3(0.0, 0.0, 0.0),
         Vector3(4.0, 0.0, 0.0),
@@ -199,7 +230,9 @@ TEST(Intersection, handles_point_on_triangle_boundary_and_outside_plane) {
     expect_symmetric_intersection(outside_plane, area, false);
 }
 
-TEST(Intersection, handles_point_at_segment_endpoint_and_on_line_extension) {
+TYPED_TEST(IntersectionTest, handles_point_at_segment_endpoint_and_on_line_extension) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle segment = segment_triangle(
         Vector3(0.0, 0.0, 0.0),
         Vector3(1.0, 1.0, 1.0),
@@ -211,7 +244,9 @@ TEST(Intersection, handles_point_at_segment_endpoint_and_on_line_extension) {
     expect_symmetric_intersection(extension, segment, false);
 }
 
-TEST(Intersection, handles_segment_endpoint_touch_containment_and_separation) {
+TYPED_TEST(IntersectionTest, handles_segment_endpoint_touch_containment_and_separation) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle base = segment_triangle(
         Vector3(0.0, 0.0, 0.0),
         Vector3(2.0, 0.0, 0.0),
@@ -243,7 +278,9 @@ TEST(Intersection, handles_segment_endpoint_touch_containment_and_separation) {
     expect_symmetric_intersection(diagonal_base, parallel_disjoint, false);
 }
 
-TEST(Intersection, handles_segment_intersections_in_all_projection_planes) {
+TYPED_TEST(IntersectionTest, handles_segment_intersections_in_all_projection_planes) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle first_yz = segment_triangle(
         Vector3(0.0, -2.0, 0.0),
         Vector3(0.0, 0.0, 0.0),
@@ -265,7 +302,9 @@ TEST(Intersection, handles_segment_intersections_in_all_projection_planes) {
     expect_symmetric_intersection(first_zx, second_zx, true);
 }
 
-TEST(Intersection, handles_segment_with_one_endpoint_on_triangle_plane) {
+TYPED_TEST(IntersectionTest, handles_segment_with_one_endpoint_on_triangle_plane) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle area{
         Vector3(0.0, 0.0, 0.0),
         Vector3(4.0, 0.0, 0.0),
@@ -288,7 +327,9 @@ TEST(Intersection, handles_segment_with_one_endpoint_on_triangle_plane) {
     expect_symmetric_intersection(endpoint_inside_reordered, area, true);
 }
 
-TEST(Intersection, handles_segment_touching_triangle_edge_and_vertex) {
+TYPED_TEST(IntersectionTest, handles_segment_touching_triangle_edge_and_vertex) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle area{
         Vector3(0.0, 0.0, 0.0),
         Vector3(4.0, 0.0, 0.0),
@@ -306,7 +347,9 @@ TEST(Intersection, handles_segment_touching_triangle_edge_and_vertex) {
     expect_symmetric_intersection(vertex_touch, area, true);
 }
 
-TEST(Intersection, handles_coplanar_segment_inside_and_outside_triangle) {
+TYPED_TEST(IntersectionTest, handles_coplanar_segment_inside_and_outside_triangle) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle area{
         Vector3(0.0, 0.0, 0.0),
         Vector3(4.0, 0.0, 0.0),
@@ -329,7 +372,9 @@ TEST(Intersection, handles_coplanar_segment_inside_and_outside_triangle) {
     expect_symmetric_intersection(along_edge, area, true);
 }
 
-TEST(Intersection, handles_coplanar_triangle_containment_shared_edge_and_equality) {
+TYPED_TEST(IntersectionTest, handles_coplanar_triangle_containment_shared_edge_and_equality) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle outer{
         Vector3(0.0, 0.0, 0.0),
         Vector3(6.0, 0.0, 0.0),
@@ -352,7 +397,9 @@ TEST(Intersection, handles_coplanar_triangle_containment_shared_edge_and_equalit
     expect_symmetric_intersection(outer, equal_reversed, true);
 }
 
-TEST(Intersection, handles_coplanar_triangles_in_all_projection_planes) {
+TYPED_TEST(IntersectionTest, handles_coplanar_triangles_in_all_projection_planes) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle first_yz{
         Vector3(0.0, 0.0, 0.0),
         Vector3(0.0, 4.0, 0.0),
@@ -374,7 +421,9 @@ TEST(Intersection, handles_coplanar_triangles_in_all_projection_planes) {
     expect_symmetric_intersection(first_zx, second_zx, true);
 }
 
-TEST(Intersection, rejects_area_triangles_separated_by_plane_after_bounds_overlap) {
+TYPED_TEST(IntersectionTest, rejects_area_triangles_separated_by_plane_after_bounds_overlap) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle first{
         Vector3(-1.0, -1.0, 0.0),
         Vector3(2.0, 3.0, 1.0),
@@ -387,7 +436,9 @@ TEST(Intersection, rejects_area_triangles_separated_by_plane_after_bounds_overla
     expect_symmetric_intersection(first, second, false);
 }
 
-TEST(Intersection, rejects_area_triangles_separated_only_by_edge_cross_edge_axis) {
+TYPED_TEST(IntersectionTest, rejects_area_triangles_separated_only_by_edge_cross_edge_axis) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle first{
         Vector3(3.0, -1.0, -1.0),
         Vector3(-3.0, -2.0, -1.0),
@@ -400,7 +451,9 @@ TEST(Intersection, rejects_area_triangles_separated_only_by_edge_cross_edge_axis
     expect_symmetric_intersection(first, second, false);
 }
 
-TEST(Intersection, handles_non_coplanar_triangle_edge_and_vertex_contact) {
+TYPED_TEST(IntersectionTest, handles_non_coplanar_triangle_edge_and_vertex_contact) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle horizontal{
         Vector3(0.0, 0.0, 0.0),
         Vector3(4.0, 0.0, 0.0),
@@ -418,7 +471,9 @@ TEST(Intersection, handles_non_coplanar_triangle_edge_and_vertex_contact) {
     expect_symmetric_intersection(horizontal, shared_vertex, true);
 }
 
-TEST(Intersection, is_invariant_under_vertex_permutations) {
+TYPED_TEST(IntersectionTest, is_invariant_under_vertex_permutations) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle first{
         Vector3(0.0, 0.0, 0.0),
         Vector3(4.0, 0.0, 0.0),
@@ -455,7 +510,9 @@ TEST(Intersection, is_invariant_under_vertex_permutations) {
     }
 }
 
-TEST(Intersection, is_invariant_under_degenerate_vertex_permutations) {
+TYPED_TEST(IntersectionTest, is_invariant_under_degenerate_vertex_permutations) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle area{
         Vector3(0.0, 0.0, 0.0),
         Vector3(4.0, 0.0, 0.0),
@@ -484,21 +541,28 @@ TEST(Intersection, is_invariant_under_degenerate_vertex_permutations) {
     }
 }
 
-TEST(Intersection, rejects_nearly_touching_coplanar_triangles) {
-    const double gap = std::nextafter(2.0, 3.0) - 2.0;
+TYPED_TEST(IntersectionTest, rejects_nearly_touching_coplanar_triangles) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
+    const TypeParam zero{0.0};
+    const TypeParam one{1.0};
+    const TypeParam two{2.0};
+    const TypeParam gap = std::nextafter(two, TypeParam{3.0}) - two;
     const Triangle first{
         Vector3(0.0, 0.0, 0.0),
         Vector3(2.0, 0.0, 0.0),
         Vector3(0.0, 2.0, 0.0)};
     const Triangle second{
-        Vector3(1.0, 1.0 + gap, 0.0),
-        Vector3(2.0, gap, 0.0),
-        Vector3(gap, 2.0, 0.0)};
+        Vector3(one, one + gap, zero),
+        Vector3(two, gap, zero),
+        Vector3(gap, two, zero)};
 
     expect_symmetric_intersection(first, second, false);
 }
 
 TEST(Intersection, is_invariant_under_power_of_two_scaling_and_large_translation) {
+    using Triangle = geometry::Triangle<double>;
+    using Vector3 = geometry::Vector3<double>;
     const double scale = std::ldexp(1.0, -300);
     const Triangle small_first{
         Vector3(0.0, 0.0, 0.0),
@@ -522,21 +586,26 @@ TEST(Intersection, is_invariant_under_power_of_two_scaling_and_large_translation
     expect_symmetric_intersection(translated_first, translated_second, true);
 }
 
-TEST(Intersection, handles_nearly_coplanar_intersection) {
-    const double distance = std::nextafter(0.0, 1.0);
+TYPED_TEST(IntersectionTest, handles_nearly_coplanar_intersection) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
+    const TypeParam one{1.0};
+    const TypeParam distance = std::nextafter(TypeParam{0.0}, one);
     const Triangle horizontal{
         Vector3(0.0, 0.0, 0.0),
         Vector3(4.0, 0.0, 0.0),
         Vector3(0.0, 4.0, 0.0)};
     const Triangle crossing{
-        Vector3(1.0, 1.0, -distance),
-        Vector3(1.0, 1.0, distance),
+        Vector3(one, one, -distance),
+        Vector3(one, one, distance),
         Vector3(2.0, 1.0, 0.0)};
 
     expect_symmetric_intersection(horizontal, crossing, true);
 }
 
-TEST(Intersection, detects_vertex_touching_edge_interior_with_large_coordinates) {
+TYPED_TEST(IntersectionTest, detects_vertex_touching_edge_interior_with_large_coordinates) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle first{
         Vector3(860677.0, 217408.0, 997841.0),
         Vector3(591416.0, -675864.0, 744645.0),
@@ -550,6 +619,8 @@ TEST(Intersection, detects_vertex_touching_edge_interior_with_large_coordinates)
 }
 
 TEST(Intersection, detects_coplanar_vertex_touching_edge_interior_with_large_coordinates) {
+    using Triangle = geometry::Triangle<double>;
+    using Vector3 = geometry::Vector3<double>;
     const Triangle first{
         Vector3(564818516.0, 741922479.0, 0.0),
         Vector3(-705854821.0, 698529496.0, 0.0),
@@ -563,6 +634,8 @@ TEST(Intersection, detects_coplanar_vertex_touching_edge_interior_with_large_coo
 }
 
 TEST(Intersection, detects_nearly_parallel_segments_crossing_with_large_coordinates) {
+    using Triangle = geometry::Triangle<double>;
+    using Vector3 = geometry::Vector3<double>;
     const Vector3 first_end(1836311903.0, 1134903170.0, 0.0);
     const Vector3 second_end(1134903170.0, 701408733.0, 0.0);
     const Triangle first = segment_triangle(-first_end, first_end, first_end);
@@ -571,7 +644,9 @@ TEST(Intersection, detects_nearly_parallel_segments_crossing_with_large_coordina
     expect_symmetric_intersection(first, second, true);
 }
 
-TEST(Intersection, rejects_triangle_crossing_plane_of_other_beside_it) {
+TYPED_TEST(IntersectionTest, rejects_triangle_crossing_plane_of_other_beside_it) {
+    using Triangle = geometry::Triangle<TypeParam>;
+    using Vector3 = geometry::Vector3<TypeParam>;
     const Triangle flat{
         Vector3(0.0, 0.0, 0.0),
         Vector3(1.0, 0.0, 0.0),
